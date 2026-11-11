@@ -1,0 +1,22 @@
+ABASTECE ESCOLA · DIREÇÃO VISUAL E REPERTÓRIO
+
+48 referências catalogadas. A pesquisa foi dividida em identidade do campo e alimentação; tipografia editorial; coordenação e dashboards; capacidade e estoque; entregas e conferência; navegação móvel; motion; acessibilidade. O catálogo JSON registra origem, URL, aplicação e nível de inspeção de cada projeto. Fontes principais: Awwwards, Behance e Dribbble, complementadas por documentação de plataforma e acessibilidade.
+
+Da pesquisa ao produto
+1. Farm Minerals / Agrumea Farm: paisagem e ritmo orgânico reinterpretados em um SVG próprio de cultivo, transporte e escola. Sem reutilizar imagens, marcas, layouts exatos ou assets das referências.
+2. Mate Libre / Café Binocle: contraste entre chamada editorial e operação enxuta. Instrument Serif em chamadas de identidade e DM Sans no trabalho diário.
+3. Logistics Company Dashboard / ColdChain OS: visão de rede, lista com situação textual e detalhe. O mapa decorativo foi descartado: o cenário não possui roteirização geográfica real.
+4. Shipping Mobile App / Warehouse App: navegação curta por tarefa, detalhe de entrega, estado e uma ação principal. Sem herdar fontes minúsculas ou densidade de mockups.
+5. Farmalyze: proximidade do campo e linguagem de trabalho. Diagnóstico agrícola por IA não faz parte do projeto.
+
+Paleta
+Verde profundo #244734, verde oliva #6C8A51, creme #F5F6EE e lima #D8E9AC. Textos operacionais usam verde escuro; cores de escola/alimento são apoio visual e sempre acompanhadas de nomes.
+
+O que é diferente entre plataformas
+A web compara capacidade, demanda e compromissos em rede; permite revisar, publicar e investigar divergências. O app mostra os compromissos do próprio fornecedor ou escola, confirma capacidade, registra saída e confere recebimento. A mesma identidade visual não implica copiar a mesma tela.
+
+Função do movimento
+Transições curtas dão continuidade entre telas. Confirmações comunicam o resultado do envio. O estado publicado, a caminho e conferido possui texto permanente. Traçados animados explicam relações e o pequeno caminhão caracteriza o percurso do alimento; essas animações ambiente podem ser pausadas e seguem movimento reduzido. O app elimina deslocamento na preferência de redução de movimento.
+
+Limites da pesquisa
+Algumas páginas do Behance impediram abertura direta (403); nesses casos a entrada usa descrição/prévia indexada e não afirma avaliação visual completa. A inspeção de miniaturas não verifica usabilidade, acessibilidade ou motion do produto original. As decisões foram verificadas na implementação própria e ainda precisam ser avaliadas com produtores e equipes escolares reais.

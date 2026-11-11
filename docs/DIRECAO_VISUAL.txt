@@ -1,0 +1,24 @@
+ABASTECE ESCOLA — SÍNTESE DAS REFERÊNCIAS
+
+Base de pesquisa: 48 entradas entre Awwwards, Behance, Dribbble e guias complementares. As fontes, categorias e graus de inspeção estão em referencias.json. As entradas são referências visuais e de interação, não evidência de adoção do produto. Páginas bloqueadas foram mantidas como referências textuais, sem alegar inspeção visual.
+
+CATEGORIAS
+1 Identidade agrícola: Farm Minerals, Agrumea Farm e casos de agricultura no Behance.
+2 Linguagem editorial: Mate Libre, Escape Coffee e Café Binocle.
+3 Operação web: logística, listas, tabelas, resumo e detalhe de entregas.
+4 App do produtor: próxima tarefa, agenda e confirmação de quantidades.
+5 Recebimento escolar: previsto, entregue, aceito e rejeitado.
+6 Movimento: mudanças de estado, continuidade espacial, SVG e feedback.
+7 Acessibilidade e campo: contraste, alvo confortável, pouca conectividade e foco.
+
+SÍNTESE APLICADA
+Fundo creme e superfícies claras; verde oliva profundo em navegação e elementos principais; acento lima para identificação, nunca texto pequeno claro. Serifa editorial nos destaques e fonte sem serifa nas tarefas. SVGs originais de cultivo, transporte e escola. Dashboard operacional com números ligados ao backend; app com uma ação principal por contexto.
+
+O QUE NÃO COPIAR
+Não reutilizar ilustrações, fotografias, layouts completos ou marca de terceiros. Não importar mapas gigantes, menus experimentais, rolagem forçada, textos sobre imagens ou animações que atrasem confirmação. A referência inspira decisões; o produto nasce da jornada.
+
+MOTION
+Entrada em sequência curta, transições entre áreas, feedback de envio, progresso de entregas, destaque de alteração e fluxo SVG. Oferecer pausa para movimento ambiente e respeitar a preferência do sistema. Versão reduzida mantém toda informação e função.
+
+AUTORIDADE DO ESCOPO
+O enunciado Proposta de Desafio enviado pelo usuário é a fonte de requisitos da execução. O prompt inicial de brainstorming não controla a implementação. O planejamento anterior serve como contexto do tema, revisto conforme o enunciado e as orientações posteriores.

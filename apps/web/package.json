@@ -1,0 +1,6 @@
+{
+  "name":"@abastece/web", "version":"1.0.0", "private":true,"type":"module",
+  "scripts":{"dev":"vite --host 0.0.0.0 --port 4180", "build":"vite build", "typecheck":"tsc --noEmit"},
+  "dependencies":{"react":"19.2.3","react-dom":"19.2.3","motion":"^12.35.0","lucide-react":"^0.577.0","qrcode":"^1.5.4","@fontsource/dm-sans":"^5.2.8","@fontsource/instrument-serif":"^5.2.8"},
+  "devDependencies":{"vite":"^7.3.1","@vitejs/plugin-react":"^5.1.4","@types/react":"~19.2.2","@types/react-dom":"~19.2.0","@types/qrcode":"^1.5.6"}
+}

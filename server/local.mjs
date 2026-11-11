@@ -1,0 +1,11 @@
+import {createServer} from 'node:http';
+import {DatabaseSync} from 'node:sqlite';
+import {readFileSync,mkdirSync,existsSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import {api} from './api.mjs';
+const root=fileURLToPath(new URL('../',import.meta.url));mkdirSync(root+'.data',{recursive:true});const sqlite=new DatabaseSync(root+'.data/demo.sqlite');sqlite.exec('PRAGMA foreign_keys=ON');
+if(!sqlite.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='rooms'").get())sqlite.exec(readFileSync(root+'drizzle/0000_initial.sql','utf8').replaceAll('--> statement-breakpoint',''));
+const stmt=(sql,args=[])=>({bind(...values){return stmt(sql,values)},async first(){return sqlite.prepare(sql).get(...args)??null},runSync(){const r=sqlite.prepare(sql).run(...args);return {meta:{changes:Number(r.changes)}}},async run(){return this.runSync()}});
+const DB={prepare:stmt,async batch(statements){sqlite.exec('BEGIN IMMEDIATE');try{const results=[];for(const s of statements)results.push(s.runSync());sqlite.exec('COMMIT');return results;}catch(e){sqlite.exec('ROLLBACK');throw e;}}};
+const port=Number(process.env.PORT||4181);const handler=process.argv.includes('--preview')?(await import('../dist/server/index.js')).default.fetch:api;
+createServer(async(req,res)=>{try{const chunks=[];for await(const c of req)chunks.push(c);const body=Buffer.concat(chunks);const request=new Request('http://127.0.0.1:'+port+req.url,{method:req.method,headers:req.headers,...(body.length?{body}: {})});const response=await handler(request,{DB});res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));}catch{res.writeHead(500);res.end('Falha no servidor local.');}}).listen(port,'0.0.0.0',()=>console.log('Serviço persistente em http://127.0.0.1:'+port));

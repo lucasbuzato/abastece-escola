@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.expo/
+.wrangler/
+.sites-runtime/
+.env*
+!.env.example
+*.sqlite*
+*.log
+.DS_Store
+outputs/
+
+.data/
+.build/

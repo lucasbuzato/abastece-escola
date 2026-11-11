@@ -1,0 +1,12 @@
+import {readdirSync,readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {resolve,relative,extname} from 'node:path';
+import {build} from 'esbuild';
+const root=resolve(import.meta.dirname,'..'),assets={};
+const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.woff2':'font/woff2','.ico':'image/x-icon'};
+function collect(dir,prefix){for(const e of readdirSync(dir,{withFileTypes:true})){const p=resolve(dir,e.name);if(e.isDirectory())collect(p,prefix);else{const base=prefix==='/app'?'apps/mobile/dist':'apps/web/dist';assets[prefix+'/'+relative(resolve(root,base),p).split('\\').join('/')]=[types[extname(p)]||'application/octet-stream',(extname(p)==='.html'?Buffer.from(readFileSync(p,'utf8').replace('<html lang="en">','<html lang="pt-BR">')):readFileSync(p)).toString('base64')];}}}
+collect(resolve(root,'apps/web/dist'),'');collect(resolve(root,'apps/mobile/dist'),'/app');
+mkdirSync(resolve(root,'.build'),{recursive:true});mkdirSync(resolve(root,'dist/server'),{recursive:true});
+writeFileSync(resolve(root,'.build/assets.json'),JSON.stringify(assets));
+writeFileSync(resolve(root,'.build/worker.mjs'),`import {api} from '../server/api.mjs';import assets from './assets.json';export default {async fetch(request,env){const u=new URL(request.url);if(u.pathname.startsWith('/api/'))return api(request,env);if(!['GET','HEAD'].includes(request.method))return new Response('Método não permitido',{status:405});let path=decodeURIComponent(u.pathname);let asset=assets[path]||assets[path+'/index.html'];if(!asset&&!path.split('/').pop().includes('.'))asset=assets[path.startsWith('/app')?'/app/index.html':'/index.html'];if(!asset)return new Response('Arquivo não encontrado',{status:404});const bytes=Uint8Array.from(atob(asset[1]),c=>c.charCodeAt(0));return new Response(request.method==='HEAD'?null:bytes,{headers:{'content-type':asset[0],'cache-control':asset[0].startsWith('text/html')?'no-cache':'public, max-age=3600','x-content-type-options':'nosniff','referrer-policy':'no-referrer','permissions-policy':'camera=(),microphone=(),geolocation=()'}});}};`);
+await build({entryPoints:[resolve(root,'.build/worker.mjs')],bundle:true,format:'esm',platform:'browser',target:'es2022',minify:true,outfile:resolve(root,'dist/server/index.js')});
+console.log('Worker ESM e exportações web/mobile preparados.');
