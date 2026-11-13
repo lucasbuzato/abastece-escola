@@ -1,0 +1,14 @@
+{
+  "project": "@ucas/abastece-escola",
+  "projectId": "1ab49602-b94c-4e8a-93e5-821374b6fa21",
+  "group": "22cec39f-80a7-4660-8bf8-8fe14be72c13",
+  "channel": "preview",
+  "runtime": "exposdk:57.0.0",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "url": "https://expo.dev/accounts/ucas/projects/abastece-escola/updates/22cec39f-80a7-4660-8bf8-8fe14be72c13",
+  "previewUrl": "https://expo.dev/preview/update?message=Identidade+do+site+e+integra%C3%A7%C3%A3o+produtor-escola+revisadas&updateRuntimeVersion=exposdk%3A57.0.0&createdAt=2026-11-13T21%3A16%3A35.372Z&slug=exp&projectId=1ab49602-b94c-4e8a-93e5-821374b6fa21&group=22cec39f-80a7-4660-8bf8-8fe14be72c13",
+  "web": "https://abastece-escola.vercel.app/app/"
+}

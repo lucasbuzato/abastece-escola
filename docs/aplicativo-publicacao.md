@@ -27,3 +27,13 @@ No monorepo, o Metro resolve as versões compartilhadas por seus caminhos padrã
 - [Expo SDK 57](https://expo.dev/changelog/sdk-57): compatibilidade da prévia.
 - [Nielsen Norman Group — prototipação com IA](https://www.nngroup.com/articles/ai-prototyping/): decisões guiadas pelo contexto de uso, em vez de repetição de padrões genéricos.
 - [Escrita concisa, escaneável e objetiva](https://www.nngroup.com/articles/concise-scannable-and-objective-how-to-write-for-the-web/): orientação editorial aplicada aos textos. Esses critérios são uma revisão de qualidade, não um detector de autoria por IA.
+
+## Publicação confirmada
+
+- Grupo Expo: `22cec39f-80a7-4660-8bf8-8fe14be72c13`.
+- [Abrir atualização na Expo](https://expo.dev/accounts/ucas/projects/abastece-escola/updates/22cec39f-80a7-4660-8bf8-8fe14be72c13). Use Preview para exibir o QR.
+- [Abrir diretamente a prévia](https://expo.dev/preview/update?message=Identidade+do+site+e+integra%C3%A7%C3%A3o+produtor-escola+revisadas&updateRuntimeVersion=exposdk%3A57.0.0&createdAt=2026-11-13T21%3A16%3A35.372Z&slug=exp&projectId=1ab49602-b94c-4e8a-93e5-821374b6fa21&group=22cec39f-80a7-4660-8bf8-8fe14be72c13).
+- [Abrir a versão web do app](https://abastece-escola.vercel.app/app/).
+- Canal `preview` ativo e associado à branch `preview`; manifestos Android e iOS responderam HTTP 200.
+- A versão web publicada foi aberta e uma alteração de capacidade foi gravada com sucesso; console sem erros ou advertências nessa sessão.
+- O cálculo opcional de fingerprint do EAS foi omitido após exceder o tempo esperado. A compatibilidade da atualização usa o runtime explícito `exposdk:57.0.0`.
