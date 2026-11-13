@@ -34,7 +34,7 @@ const fmt = (n: number) =>
   new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 3 }).format(n);
 const op = () =>
   Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
-const PUBLIC_API = "https://abastece-escola.toughazure1.chatgpt.site";
+const PUBLIC_API = "https://abastece-escola.vercel.app";
 function defaultBase() {
   if (Platform.OS === "web") {
     const l = (globalThis as any).location;
