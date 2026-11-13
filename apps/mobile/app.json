@@ -23,6 +23,12 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "owner": "ucas",
+    "extra": {
+      "eas": {
+        "projectId": "1ab49602-b94c-4e8a-93e5-821374b6fa21"
+      }
+    }
   }
 }
