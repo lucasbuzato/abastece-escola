@@ -1,1 +1,28 @@
-{"expo":{"name":"Abastece Escola","slug":"abastece-escola","version":"1.0.0","orientation":"portrait","scheme":"abastece","userInterfaceStyle":"light","ios":{"supportsTablet":true,"bundleIdentifier":"br.org.abastece.escola"},"android":{"package":"br.org.abastece.escola"},"web":{"bundler":"metro","name":"Abastece Escola App","description":"A próxima entrega, sempre à mão."},"experiments":{"baseUrl":"/app"}}}
+{
+  "expo": {
+    "name": "Abastece Escola",
+    "slug": "abastece-escola",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "abastece",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "br.org.abastece.escola"
+    },
+    "android": {
+      "package": "br.org.abastece.escola"
+    },
+    "web": {
+      "bundler": "metro",
+      "name": "Abastece Escola App",
+      "description": "A próxima entrega, sempre à mão."
+    },
+    "experiments": {
+      "baseUrl": "/app"
+    },
+    "plugins": [
+      "expo-font"
+    ]
+  }
+}

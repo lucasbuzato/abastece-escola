@@ -1,22 +1,15 @@
-ABASTECE ESCOLA · DIREÇÃO VISUAL E REPERTÓRIO
+ABASTECE ESCOLA · DIREÇÃO VISUAL ATUAL
 
-48 referências catalogadas. A pesquisa foi dividida em identidade do campo e alimentação; tipografia editorial; coordenação e dashboards; capacidade e estoque; entregas e conferência; navegação móvel; motion; acessibilidade. O catálogo JSON registra origem, URL, aplicação e nível de inspeção de cada projeto. Fontes principais: Awwwards, Behance e Dribbble, complementadas por documentação de plataforma e acessibilidade.
+A página inicial apresenta o problema, a proposta, o fluxo entre participantes, a demonstração e suas fontes. A operação fica em /coordenacao; o aplicativo concentra capacidade, saída e recebimento.
 
-Da pesquisa ao produto
-1. Farm Minerals / Agrumea Farm: paisagem e ritmo orgânico reinterpretados em um SVG próprio de cultivo, transporte e escola. Sem reutilizar imagens, marcas, layouts exatos ou assets das referências.
-2. Mate Libre / Café Binocle: contraste entre chamada editorial e operação enxuta. Instrument Serif em chamadas de identidade e DM Sans no trabalho diário.
-3. Logistics Company Dashboard / ColdChain OS: visão de rede, lista com situação textual e detalhe. O mapa decorativo foi descartado: o cenário não possui roteirização geográfica real.
-4. Shipping Mobile App / Warehouse App: navegação curta por tarefa, detalhe de entrega, estado e uma ação principal. Sem herdar fontes minúsculas ou densidade de mockups.
-5. Farmalyze: proximidade do campo e linguagem de trabalho. Diagnóstico agrícola por IA não faz parte do projeto.
+Tipografia: Bricolage Grotesque Variable para títulos; Source Sans 3 Variable para leitura e interface. Arquivos locais, com licenças OFL em docs/licenses.
 
-Paleta
-Verde profundo #244734, verde oliva #6C8A51, creme #F5F6EE e lima #D8E9AC. Textos operacionais usam verde escuro; cores de escola/alimento são apoio visual e sempre acompanhadas de nomes.
+Cores por função: verde #105B42 nas ações e identidade; texto #123F35; branco e verde frio #F3F8F6 nas superfícies; lima #D7F26A para capacidade e participação; amarelo #FFD35B para colheita e chamada; azul #075E78 para integração e relatórios; terracota #DC5136 e texto #8A3021 para diferenças. Cor sempre acompanha texto ou símbolo; não há fundo bege.
 
-O que é diferente entre plataformas
-A web compara capacidade, demanda e compromissos em rede; permite revisar, publicar e investigar divergências. O app mostra os compromissos do próprio fornecedor ou escola, confirma capacidade, registra saída e confere recebimento. A mesma identidade visual não implica copiar a mesma tela.
+Ilustração: SVG próprio de campo, estrada e escola; horta vetorial com couve, feijoeiro e rama de cenoura. Curvas de cultivo dão continuidade ao fundo. Os desenhos ficam em espaço reservado e se simplificam no celular. A versão realista gerada foi descartada e não integra o produto. A fotografia já existente na seção de solução é ilustrativa e possui crédito Pexels no rodapé.
 
-Função do movimento
-Transições curtas dão continuidade entre telas. Confirmações comunicam o resultado do envio. O estado publicado, a caminho e conferido possui texto permanente. Traçados animados explicam relações e o pequeno caminhão caracteriza o percurso do alimento; essas animações ambiente podem ser pausadas e seguem movimento reduzido. O app elimina deslocamento na preferência de redução de movimento.
+Movimento: GSAP com contextos e limpeza por componente; ScrollTrigger para entradas e visualizações. A animação ambiente do veículo é limitada a 1,2 unidades do SVG. Botão de pausa e preferência de movimento reduzido. Sem controle forçado da rolagem.
 
-Limites da pesquisa
-Algumas páginas do Behance impediram abertura direta (403); nesses casos a entrada usa descrição/prévia indexada e não afirma avaliação visual completa. A inspeção de miniaturas não verifica usabilidade, acessibilidade ou motion do produto original. As decisões foram verificadas na implementação própria e ainda precisam ser avaliadas com produtores e equipes escolares reais.
+Repertório: 48 referências no catálogo docs/referencias.json, divididas em agricultura, identidade editorial, planejamento, entregas, navegação móvel e motion. Awwwards, Behance e Dribbble são repertório, sem copiar seus recursos. Algumas entradas Behance foram consultadas apenas por prévia indexada devido ao bloqueio de acesso; isso não constitui inspeção completa do produto.
+
+Auditoria e evidências da revisão: docs/auditoria-design.md e docs/evidencias/revisao-design/.

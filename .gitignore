@@ -12,3 +12,7 @@ outputs/
 
 .data/
 .build/
+
+.vercel/
+docs/evidencias/
+.vercel-output/

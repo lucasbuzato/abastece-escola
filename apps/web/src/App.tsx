@@ -1,65 +1,617 @@
-import React,{useState,useEffect,useRef} from 'react';
-import {motion,AnimatePresence,MotionConfig,useReducedMotion} from 'motion/react';
-import {Sprout,LayoutDashboard,CalendarDays,Truck,Users,ChartNoAxesCombined,ArrowUpRight,ArrowRight,ArrowLeft,ChevronDown,ChevronRight,Check,CheckCheck,Leaf,Bell,Search,Smartphone,X,Plus,RefreshCw,AlertTriangle,Package,School,Download,Pause,Play,Copy,ExternalLink,Settings2,BookOpen,CheckCircle2,Clock,LogOut,WifiOff,Carrot,Banana,SlidersHorizontal,Info} from 'lucide-react';
-import QRCode from 'qrcode';
-import {summarize,kg} from '../../../packages/domain/index.mjs';
-type Session={room:string;token:string;invites?:any[]};
-type Snapshot={state:any;revision:number;actor:any};
-const navs=[['overview','Visão geral',LayoutDashboard],['plan','Planejamento',CalendarDays],['deliveries','Entregas',Truck],['suppliers','Produtores',Sprout],['reports','Relatórios',ChartNoAxesCombined]] as const;
-const statusLabel:Record<string,string>={scheduled:'Agendada',dispatched:'A caminho',received:'Conferida',cancelled:'Cancelada'};
-const KEY='abastece-coordinator-session-v1';
-const appear={initial:{opacity:0,y:12},animate:{opacity:1,y:0},exit:{opacity:0,y:-6},transition:{duration:.28}};
-function ProductIcon({id,size=19}:{id:string;size?:number}){const Icon=id==='banana'?Banana:Carrot;return <Icon size={size} strokeWidth={1.6}/>;}
-function Brand(){return <span className="brand"><span className="brand-symbol"><Sprout size={27}/></span><span>abastece<span className="brand-sub">ESCOLA</span></span><span className="brand-dot">®</span></span>;}
-function FieldScene(){return <svg className="field-scene" viewBox="0 0 550 245" aria-hidden="true"><defs><pattern id="soil" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r=".7" fill="#778D60" opacity=".25"/></pattern></defs><circle cx="362" cy="69" r="41" fill="#D9E8A8"/><g className="sun-rays" stroke="#8FA26D" strokeWidth="1.3">{Array.from({length:12},(_,i)=><path key={i} d="M362 16v-8" transform={`rotate(${i*30} 362 69)`}/>)}</g><path d="M-20 178Q105 72 257 153T576 143V260H-20Z" fill="#A6BA7C"/><path d="M-15 196Q170 93 315 180T580 150V260H-15Z" fill="#6E8C55"/><path d="M5 255Q180 140 358 220T600 183" fill="none" stroke="#DCE4B8" strokeWidth="35"/><path d="M-20 238Q155 127 321 202" fill="none" stroke="#DCE4B8" strokeWidth="1"/><path d="M-30 217Q141 105 307 180M-30 229Q141 117 307 192" fill="none" stroke="#DCE4B8" strokeWidth="1"/><path d="M-10 195Q70 145 151 142" fill="none" stroke="#DCE4B8" strokeWidth="1"/><g transform="translate(95 110)"><path d="M0 68V16M0 47C-28 44-27 20-27 20S0 19 0 47M0 29C23 27 24 6 24 6S0 5 0 29" fill="#244734" stroke="#244734" strokeWidth="2"/><path d="M-8 66h16" stroke="#244734" strokeWidth="2"/></g><g transform="translate(422 117)"><path d="M0 53V12l27-21 29 21v41Z" fill="#F7F3DF"/><path d="m-6 13 33-27 35 27" stroke="#244734" strokeWidth="4" fill="none"/><path d="M22 53V29h13v24" fill="#244734"/><path d="M9 21h9v10H9M40 21h9v10h-9" fill="#8FA26D"/><path d="M26-12v-15m0 0h19v9H26" fill="#DAA473" stroke="#244734" strokeWidth="1"/></g><g className="scene-truck" transform="translate(274 160)"><path d="M-22 21V-11h48v32h-48m48 0V-2h16l17 14v9H26" fill="#F5E5C8" stroke="#244734" strokeWidth="2"/><path d="M31 2h9l10 9H31Z" fill="#AFC69B"/><circle cx="-9" cy="23" r="7" fill="#244734"/><circle cx="42" cy="23" r="7" fill="#244734"/><circle cx="-9" cy="23" r="2" fill="#F4F0DB"/><circle cx="42" cy="23" r="2" fill="#F4F0DB"/><path d="M-4 11V-1m0 8C-10 6-10 1-10 1S-4 1-4 7m0-6C2 0 2-6 2-6S-4-5-4 1" fill="#547349" stroke="#547349" strokeWidth="1"/></g><g fill="#244734" fontSize="9" fontFamily="DM Sans"><text x="60" y="211">QUEM CULTIVA</text><text x="413" y="199">QUEM RECEBE</text></g><path d="m207 84 27-6m-21 15 27-6" stroke="#72885C" strokeWidth="1.5"/><path d="m181 100 17-4" stroke="#72885C" strokeWidth="1.5"/></svg>;}
-function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:React.ReactNode}){const ref=useRef<HTMLDialogElement>(null);useEffect(()=>{ref.current?.showModal();return()=>ref.current?.close()},[]);return <dialog ref={ref} onCancel={onClose} className="dialog"><div className="dialog-top"><h2>{title}</h2><button className="icon-button" onClick={onClose} aria-label="Fechar janela"><X size={21}/></button></div>{children}</dialog>;}
-export default function App(){
- const [session,setSession]=useState<Session|null>(null),[snap,setSnap]=useState<Snapshot|null>(null),[view,setView]=useState(new URLSearchParams(location.search).get('view')||'overview'),[error,setError]=useState(''),[online,setOnline]=useState(true),[busy,setBusy]=useState(false),[toast,setToast]=useState(''),[modal,setModal]=useState(''),[selected,setSelected]=useState<any>(null),[search,setSearch]=useState(''),[paused,setPaused]=useState(false),[product,setProduct]=useState('all'),[qr,setQr]=useState(''),[invite,setInvite]=useState<any>(null),[adjust,setAdjust]=useState(''),[note,setNote]=useState('');
- const reduced=useReducedMotion();const latest=useRef<Snapshot|null>(null);latest.current=snap;
- useEffect(()=>{let active=true;const init=async()=>{try{let s:Session|null=null;const incoming=new URLSearchParams(location.hash.slice(1));if(incoming.get('access')){s={room:new URLSearchParams(location.search).get('room')||'',token:incoming.get('access')!};history.replaceState({},'',location.pathname);}else{try{s=JSON.parse(localStorage.getItem(KEY)||'null')}catch{}}
- if(!s){const r=await fetch('/api/create',{method:'POST'});if(!r.ok)throw Error('Não foi possível preparar a demonstração.');s=await r.json();}if(active){localStorage.setItem(KEY,JSON.stringify(s));setSession(s);}}catch(e:any){setError(e.message);}};init();return()=>{active=false}},[]);
- async function refresh(s=session){if(!s)return;try{const r=await fetch(`/api/snapshot?room=${s.room}`,{headers:{authorization:`Bearer ${s.token}`}});const body=await r.json();if(!r.ok)throw Error(body.error);setSnap(body);setOnline(true);setError('');}catch(e:any){setOnline(false);if(!latest.current)setError(e.message)}}
- useEffect(()=>{if(!session)return;refresh(session);const timer=setInterval(()=>{if(document.visibilityState==='visible')refresh(session)},1800);const focus=()=>refresh(session);window.addEventListener('focus',focus);return()=>{clearInterval(timer);window.removeEventListener('focus',focus)}},[session]);
- useEffect(()=>{if(!toast)return;const timer=setTimeout(()=>setToast(''),5000);return()=>clearTimeout(timer)},[toast]);
- useEffect(()=>{if(!invite||!session){setQr('');return;}QRCode.toDataURL(inviteUrl(invite),{margin:1,width:220,color:{dark:'#244734',light:'#FFFFFF'}}).then(setQr)},[invite,session]);
- const changeView=(v:string)=>{setView(v);setSearch('');history.replaceState({},'',`?view=${v}`);document.querySelector('main')?.scrollIntoView({behavior:'instant'});};
- async function command(type:string,payload:any={}){if(!session||!snap)return;setBusy(true);setError('');try{const r=await fetch('/api/command',{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${session.token}`},body:JSON.stringify({room:session.room,revision:snap.revision,operationId:crypto.randomUUID(),type,payload})});const body=await r.json();if(!r.ok)throw Error(body.error);setSnap(body);setToast(type==='publish'?'Plano publicado. A agenda das escolas já foi atualizada.':type==='propose'?'Revisão preparada. Os produtores já podem confirmar no app.':'Alteração registrada no ambiente compartilhado.');setModal('');}catch(e:any){setError(e.message);await refresh();setError(e.message);}finally{setBusy(false);}}
- const inviteUrl=(i:any)=>`${location.origin}${i.role==='coordinator'?'/':'/app/'}?room=${session?.room}#access=${i.token}`;
- async function copy(text:string){try{await navigator.clipboard.writeText(text);setToast('Convite copiado. Abra no app ou em outro dispositivo.')}catch{setToast('Selecione e copie o convite exibido.')}}
- if(!snap){return <div className="loading-screen"><Brand/><Sprout className="loading-leaf" size={45}/><h1>Cultivando conexões.</h1><p>{error||'Preparando seu ambiente de demonstração…'}</p>{error&&<button className="button primary" onClick={()=>location.reload()}>Tentar novamente</button>}</div>}
- const s=snap.state;const summary=summarize(s);const filtered=s.deliveries.filter((d:any)=>(product==='all'||d.product===product)&&(!search||`${s.schools.find((x:any)=>x.id===d.school)?.name} ${s.suppliers.find((x:any)=>x.id===d.supplier)?.name} ${d.product}`.toLowerCase().includes(search.toLowerCase())));
- const expected=(id:string)=>s.demands.filter((d:any)=>d.school===id).reduce((n:number,d:any)=>n+d.qty,0);
- const accepted=(id:string)=>s.deliveries.filter((d:any)=>d.school===id).reduce((n:number,d:any)=>n+(d.receipt?.accepted??0),0);
- const planned=(id:string)=>s.deliveries.filter((d:any)=>d.school===id).reduce((n:number,d:any)=>n+d.qty,0);
- const pageTitle:Record<string,string>={overview:'Visão geral',plan:'Planejamento',deliveries:'Entregas',suppliers:'Produtores',reports:'Relatórios',about:'Sobre o projeto'};
- const steps=['Plano compartilhado','Confirmação dos produtores','Saída e transporte','Conferência na escola'];
- function flow(){return <section className="panel flow-panel"><div className="section-top"><div><span className="eyebrow">CONEXÕES QUE ALIMENTAM</span><h2>O caminho da colheita<span className="small-dot"/></h2></div><button className="text-button" onClick={()=>changeView('plan')}>Ver distribuição <ArrowUpRight size={17}/></button></div><div className="flow"><div className="flow-producers">{s.suppliers.map((p:any)=><div className="flow-node" key={p.id}><span className="avatar" style={{background:p.color}}><Sprout size={22}/></span><div><strong>{p.short}</strong><span>{kg(s.deliveries.filter((d:any)=>d.supplier===p.id).reduce((n:number,d:any)=>n+d.qty,0))} kg previstos</span></div></div>)}</div><div className="flow-lines" aria-hidden="true"><svg viewBox="0 0 270 180" preserveAspectRatio="none"><path d="M0 45C95 45 55 90 134 90S180 24 270 24M0 135C95 135 55 90 134 90S180 90 270 90M134 90C180 90 200 157 270 157"/><path className="flow-dash" d="M0 45C95 45 55 90 134 90S180 24 270 24M0 135C95 135 55 90 134 90S180 90 270 90M134 90C180 90 200 157 270 157"/></svg><span className="flow-hub"><Leaf size={23}/></span></div><div className="flow-schools">{s.schools.map((x:any)=><button key={x.id} className="flow-school" onClick={()=>{setSelected({school:x});setModal('school')}}><span className="school-mini" style={{background:x.color}}><School size={17}/></span><strong>{x.short}</strong><span>{kg(planned(x.id))} kg</span><ChevronRight size={13}/></button>)}</div></div><div className="flow-footer"><span><i className="legend-dot"/>Fornecimento planejado</span><span>3 escolas. Uma rede que funciona junta.</span></div></section>}
- function deliveryTable(){return <div className="table-scroll" role="region" aria-label="Lista de entregas" tabIndex={0}><table className="delivery-table"><thead><tr><th>Alimento / origem</th><th>Destino</th><th>Quantidade</th><th>Horário</th><th>Situação</th><th><span className="sr-only">Detalhar</span></th></tr></thead><tbody>{filtered.map((d:any)=><tr key={d.id}><td><span className={`food-icon ${d.product}`}><ProductIcon id={d.product}/></span><span className="cell-text"><strong>{s.products.find((p:any)=>p.id===d.product).name}</strong><small>{s.suppliers.find((p:any)=>p.id===d.supplier).name}</small></span></td><td>{s.schools.find((x:any)=>x.id===d.school).short}</td><td><strong>{kg(d.qty)}</strong> <span className="muted">kg</span></td><td>12 nov · {d.time}</td><td><span className={`status ${d.status}`}><i/>{statusLabel[d.status]}</span></td><td><button className="icon-button" onClick={()=>{setSelected(d);setModal('delivery')}} aria-label={`Detalhar ${d.product} para ${s.schools.find((x:any)=>x.id===d.school).short}`}><ArrowUpRight size={18}/></button></td></tr>)}</tbody></table>{filtered.length===0&&<div className="empty-state"><Search size={26}/><h3>Nenhuma entrega encontrada</h3><p>Tente outro nome ou alimento.</p><button onClick={()=>{setSearch('');setProduct('all')}} className="text-button">Limpar filtros</button></div>}</div>}
- return <MotionConfig reducedMotion="user"><div className={`app-shell ${paused||reduced?'motion-paused':''}`}><a className="skip-link" href="#main">Ir para o conteúdo</a><aside className="sidebar"><a href="?view=overview" onClick={e=>{e.preventDefault();changeView('overview')}} aria-label="Abastece Escola início"><Brand/></a><div className="workspace"><span className="workspace-icon"><School size={19}/></span><span><strong>Rede do Vale</strong><small>Coordenação escolar</small></span></div><span className="nav-caption">ESPAÇO DE TRABALHO</span><nav aria-label="Navegação principal">{navs.map(([id,label,Icon])=><button key={id} className={view===id?'nav-item active':'nav-item'} onClick={()=>changeView(id)} aria-current={view===id?'page':undefined}><Icon size={20}/><span>{label}</span>{id==='deliveries'&&<small>{s.deliveries.filter((d:any)=>d.status==='dispatched').length||s.deliveries.length}</small>}</button>)}</nav><div className="sidebar-bottom"><div className="app-promo"><span className="promo-leaf"><Smartphone size={25}/><Sprout size={19}/></span><h3>O campo também<br/>está conectado.</h3><p>Produtores e escolas,<br/>juntos pelo aplicativo.</p><button onClick={()=>{setModal('connect');setInvite(session?.invites?.find(x=>x.role==='supplier'))}}>Conectar aplicativo <ArrowUpRight size={16}/></button></div><button className="nav-item" onClick={()=>changeView('about')}><BookOpen size={19}/><span>Sobre o projeto</span></button><div className="profile"><span className="profile-avatar">CO</span><span><strong>Coordenação</strong><small>Ambiente de demonstração</small></span></div></div></aside>
- <div className="main-wrap"><header className="topbar"><div className="breadcrumbs">Abastece Escola <ChevronRight size={13}/><strong>{pageTitle[view]||'Visão geral'}</strong></div><div className="top-actions"><span className={`connection ${online?'':'offline'}`}><i/>{online?'Dados sincronizados':'Sem conexão'}</span><button className="icon-button" onClick={()=>setPaused(!paused)} aria-label={paused?'Ativar animações ambiente':'Pausar animações ambiente'}>{paused?<Play size={17}/>:<Pause size={17}/>}</button><button className="notification-button icon-button" onClick={()=>setModal('notifications')} aria-label="Ver atualizações"><Bell size={19}/><span/></button><button className="top-avatar" onClick={()=>setModal('workspace')} aria-label="Informações do ambiente">CO</button></div></header>
- <main id="main"><AnimatePresence mode="wait"><motion.div key={view} {...appear} className="page-content">
- <div className="page-heading"><div><span className="eyebrow">DO CAMPO AO PRATO</span><h1>{pageTitle[view]}</h1><p>{view==='overview'?'Cada entrega importa. Cada conexão alimenta.':view==='plan'?'Encontre o equilíbrio entre a colheita e o que cada escola precisa.':view==='deliveries'?'Acompanhe o que saiu do campo e o que chegou à escola.':view==='suppliers'?'Quem cultiva hoje a alimentação de amanhã.':view==='reports'?'O que foi combinado. O que aconteceu de verdade.':'Uma rede de pessoas, conectada pela alimentação.'}</p></div><button className="cycle-button" onClick={()=>setModal('cycle')}><CalendarDays size={17}/><span>09 — 13 nov, 2026</span><ChevronDown size={15}/></button></div>
- {error&&<div className="banner error" role="alert"><AlertTriangle size={19}/><span>{error}</span><button onClick={()=>setError('')} aria-label="Dispensar aviso"><X size={16}/></button></div>}
- {view==='overview'&&<><section className="hero"><div className="hero-copy"><span className="hero-kicker"><span/> BOAS CONEXÕES, BOAS COLHEITAS</span><h2>O campo e a escola,<br/><em>no mesmo ritmo.</em></h2><p>Um abastecimento mais próximo, organizado<br className="desktop-only"/> e transparente. Da origem ao recebimento.</p><button className="button primary" onClick={()=>changeView('plan')}>Acompanhar planejamento <ArrowUpRight size={17}/></button></div><div className="hero-art"><FieldScene/><span className="harvest-label"><Sprout size={14}/> Cultivando o coletivo</span></div><span className="hero-number">01 / CONECTAR PARA ALIMENTAR</span></section>
- <section className="stats" aria-label="Resumo do ciclo">{[[School,'Escolas conectadas',s.schools.length,'580 estudantes no cenário'],[Sprout,'Produtores locais',s.suppliers.length,'Quem faz o alimento chegar'],[Package,'Alimentos planejados',kg(summary.planned)+' kg','Em '+summary.totalDeliveries+' entregas neste ciclo'],[CheckCheck,'Recebido e aceito',summary.coverage+'%',kg(summary.accepted)+' de '+kg(summary.demand)+' kg']].map(([Icon,label,value,sub]:any,i)=><motion.div className="stat" key={label} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:.06*i}}><div className="stat-label"><span>{label}</span><Icon size={18}/></div><strong className="stat-value">{value}<span className="stat-decoration">↗</span></strong><small>{sub}</small></motion.div>)}</section>
- {summary.shortage>0&&<div className="attention"><span className="attention-icon"><AlertTriangle size={20}/></span><div><strong>A colheita mudou. Vamos ajustar o caminho?</strong><p>Há {kg(summary.shortage)} kg acima da capacidade confirmada. Revise antes das próximas saídas.</p></div><button className="text-button" onClick={()=>changeView('plan')}>Revisar plano <ArrowRight size={17}/></button></div>}
- <div className="overview-grid">{flow()}<section className="panel cycle-panel"><span className="eyebrow">UM PASSO DE CADA VEZ</span><h2>Nosso ciclo</h2><div className="cycle-version">{s.cycle.label}<span>v{s.plan.version}</span></div><ol className="steps">{steps.map((label,i)=><li key={label} className={i===0||i===1&&s.plan.status==='published'||i===2&&s.deliveries.some((d:any)=>d.status!=='scheduled')||i===3&&summary.delivered===s.deliveries.length?'done':''}><span>{i===0||i===1&&s.plan.status==='published'?<Check size={13}/>:i+1}</span><div><strong>{label}</strong><small>{['Necessidade e capacidade reunidas',s.plan.status==='published'?'Compromissos confirmados':'Aguardando as confirmações','O alimento está a caminho',`${summary.delivered} de ${s.deliveries.length} conferências`][i]}</small></div></li>)}</ol><button className="text-button" onClick={()=>changeView('deliveries')}>Acompanhar entregas <ArrowUpRight size={17}/></button></section></div>
- <section className="panel"><div className="section-top"><div><span className="eyebrow">NA AGENDA</span><h2>Próximas entregas <span className="count-badge">{s.deliveries.length}</span></h2></div><button className="text-button" onClick={()=>changeView('deliveries')}>Ver todas <ArrowRight size={16}/></button></div>{deliveryTable()}</section></>}
- {view==='plan'&&<><div className="plan-header"><div><span className={`status ${s.plan.status==='published'?'received':'scheduled'}`}><i/>{s.plan.status==='published'?'Plano publicado':'Revisão aguardando confirmações'}</span><h2>Distribuição da semana <span className="muted">/ versão {s.plan.version}</span></h2><p>Compare capacidade e compromissos antes de publicar uma nova versão.</p></div><button className="button primary" disabled={busy} onClick={()=>setModal('revise')}><RefreshCw size={17}/> Preparar revisão</button></div><div className="capacity-grid">{s.products.map((p:any)=>{const need=s.demands.filter((d:any)=>d.product===p.id).reduce((n:number,d:any)=>n+d.qty,0),have=s.capacities.filter((c:any)=>c.product===p.id).reduce((n:number,c:any)=>n+c.qty,0);return <section className="panel capacity-card" key={p.id}><span className={`food-icon ${p.id}`}><ProductIcon id={p.id} size={25}/></span><h3>{p.name}</h3><div className="capacity-values"><span><small>Necessidade</small><strong>{kg(need)} <em>kg</em></strong></span><span><small>Capacidade confirmada</small><strong>{kg(have)} <em>kg</em></strong></span></div><div className="meter"><motion.span initial={{width:0}} animate={{width:Math.min(have/need,1)*100+'%'}}/></div><p className={have<need?'warning-text':'success-text'}>{have<need?<AlertTriangle size={14}/>:<CheckCircle2 size={14}/>} {have<need?`${kg(need-have)} kg a confirmar com os produtores`:'Capacidade suficiente para a demanda'}</p></section>})}</div>
- <section className="panel"><div className="section-top"><div><span className="eyebrow">COMPROMISSOS COMPARTILHADOS</span><h2>Quem entrega, para quem</h2></div><span className="soft-chip">{s.plan.status==='published'?'Agenda disponível no app':'Envie os convites para confirmar'}</span></div>{deliveryTable()}{s.plan.status==='draft'&&<div className="publish-row"><div className="accepts">{s.suppliers.map((p:any)=><span key={p.id} className={s.plan.accepts[p.id]===s.plan.version?'accepted':''}>{s.plan.accepts[p.id]===s.plan.version?<CheckCircle2 size={16}/>:<Clock size={16}/>} {p.short}</span>)}</div><button className="button primary" disabled={busy} onClick={()=>command('publish')}>Publicar plano <ArrowRight size={17}/></button></div>}</section><p className="explain"><Info size={16}/> O plano só é publicado com capacidade suficiente e confirmação de todos os produtores envolvidos.</p></>}
- {view==='deliveries'&&<><div className="filterbar"><div className="search-box"><Search size={18}/><input aria-label="Buscar escola, produtor ou alimento" placeholder="Buscar escola, produtor ou alimento" value={search} onChange={e=>setSearch(e.target.value)}/></div><label className="select-wrap"><SlidersHorizontal size={17}/><select aria-label="Filtrar alimento" value={product} onChange={e=>setProduct(e.target.value)}><option value="all">Todos os alimentos</option>{s.products.map((p:any)=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label></div><section className="panel">{deliveryTable()}</section><div className="school-cards">{s.schools.map((x:any)=><section className="panel school-card" key={x.id}><span className="avatar" style={{background:x.color}}><School size={23}/></span><h3>{x.short}</h3><p>{x.students} estudantes no cenário</p><div><strong>{kg(accepted(x.id))}<small> / {kg(expected(x.id))} kg aceitos</small></strong><div className="meter"><span style={{width:accepted(x.id)/expected(x.id)*100+'%'}}/></div></div><button className="text-button" onClick={()=>{setSelected({school:x});setModal('school')}}>Ver recebimentos <ArrowUpRight size={16}/></button></section>)}</div></>}
- {view==='suppliers'&&<><section className="suppliers-grid">{s.suppliers.map((p:any)=><article className="panel supplier-card" key={p.id}><div className="supplier-cover"><Sprout size={88} strokeWidth={.75}/><span>DA NOSSA TERRA</span></div><div className="supplier-content"><span className="eyebrow">{p.town}</span><h2>{p.name}</h2><p>{p.person} · representante fictício</p><div className="supplier-foods">{s.capacities.filter((c:any)=>c.supplier===p.id).map((c:any)=><div key={c.product}><ProductIcon id={c.product}/><span>{s.products.find((x:any)=>x.id===c.product).name}</span><strong>{kg(c.qty)} kg</strong><small>confirmados</small></div>)}</div><button className="button secondary" onClick={()=>{setModal('connect');setInvite(session?.invites?.find(x=>x.id===p.id))}}><Smartphone size={17}/> Conectar produtor <ArrowUpRight size={16}/></button></div></article>)}</section><div className="banner info"><Leaf size={19}/><span>A capacidade é confirmada pelo produtor no app. A coordenação acompanha os mesmos dados aqui.</span></div></>}
- {view==='reports'&&<><div className="report-hero"><span className="eyebrow">UM RETRATO HONESTO DO CICLO</span><h2>O alimento só conta<br/>quando <em>chega e é aceito.</em></h2><div className="big-progress"><strong>{summary.coverage}<small>%</small></strong><p>da necessidade conferida<br/>{kg(summary.accepted)} de {kg(summary.demand)} kg</p></div><button className="button primary" onClick={()=>{const rows=[['Escola','Alimento','Previsto kg','Entregue kg','Aceito kg','Rejeitado kg'],...s.deliveries.map((d:any)=>[s.schools.find((x:any)=>x.id===d.school).name,d.product,d.qty,d.receipt?.delivered??0,d.receipt?.accepted??0,d.receipt?.rejected??0])];const csv='\uFEFF'+rows.map((r:any[])=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';')).join('\n');const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));link.download='abastece-escola-ciclo-24.csv';link.click();URL.revokeObjectURL(link.href);}}><Download size={17}/> Baixar relatório CSV</button><div className="report-leaves"><Sprout size={260} strokeWidth={.6}/></div></div><div className="capacity-grid"><section className="panel report-stat"><span className="eyebrow">ACEITO NAS ESCOLAS</span><strong>{kg(summary.accepted)} <small>kg</small></strong></section><section className="panel report-stat"><span className="eyebrow">REJEITADO NA CONFERÊNCIA</span><strong>{kg(summary.rejected)} <small>kg</small></strong></section></div><section className="panel"><div className="section-top"><div><span className="eyebrow">MEMÓRIA DO CICLO</span><h2>O que aconteceu</h2></div><span className="soft-chip">{s.events.length} registros</span></div><div className="timeline">{s.events.map((e:any)=><div key={e.id}><span className="timeline-icon"><Check size={15}/></span><div><strong>{e.title}</strong><p>{e.detail}</p><small>{e.actor} · {new Date(e.at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</small></div></div>)}</div></section></>}
- {view==='about'&&<section className="panel about"><span className="eyebrow">CITIZENTECH / ODS 2</span><h2>Uma boa alimentação<br/>começa com <em>boas conexões.</em></h2><p>Abastece Escola conecta a capacidade dos agricultores, o planejamento da rede e a conferência nas escolas. A proposta é tornar mudanças visíveis, preservar compromissos e acompanhar o que foi efetivamente recebido.</p><div className="about-columns"><div><h3>Aplicativo no campo</h3><p>Produtores confirmam quantidades e saídas. Escolas registram o recebimento. A próxima ação fica sempre à mão.</p></div><div><h3>Coordenação na web</h3><p>A equipe acompanha a rede, revisa a distribuição e publica o plano com confirmação dos envolvidos.</p></div><div><h3>Dados compartilhados</h3><p>As duas plataformas usam uma API e banco persistente comuns. Atualizações são consultadas a cada 1,8 segundo enquanto a tela está ativa.</p></div></div><div className="banner info"><Info size={20}/><p>Este ambiente usa escolas, pessoas e contratos fictícios. Os estudantes são beneficiários indiretos; nenhum dado pessoal de aluno é coletado. A demonstração não substitui processos oficiais de compra ou decisões nutricionais.</p></div><button className="button primary" onClick={()=>{setModal('connect');setInvite(session?.invites?.find(x=>x.role==='supplier'))}}>Experimentar as duas pontas <ArrowUpRight size={17}/></button></section>}
- <footer className="page-footer"><span><Sprout size={15}/> Feito de conexões. Cultivado em comunidade.</span><span>Projeto acadêmico · Dados fictícios</span></footer>
- </motion.div></AnimatePresence></main></div>
- {toast&&<div className="toast" role="status"><CheckCircle2 size={20}/><span>{toast}</span><button onClick={()=>setToast('')} aria-label="Fechar confirmação"><X size={16}/></button></div>}
- {modal==='connect'&&<Modal title="Conecte as duas pontas" onClose={()=>setModal('')}><p className="modal-intro">Abra o convite em outro dispositivo para acompanhar as mesmas entregas no aplicativo.</p>{session?.invites?<><label className="field-label">Quem vai usar o app?<select value={invite?.id||''} onChange={e=>setInvite(session.invites!.find(x=>x.id===e.target.value))}>{session.invites.filter(x=>x.role!=='coordinator').map(x=><option key={x.id} value={x.id}>{x.role==='supplier'?'Produtor':'Escola'} · {x.name}</option>)}</select></label><div className="connect-card">{qr&&<img src={qr} width="190" height="190" alt={`QR code do convite para ${invite?.name}`}/>}<div><span className="eyebrow">UM MESMO ABASTECIMENTO</span><h3>{invite?.name}</h3><p>Use a câmera do celular para abrir a versão de demonstração. No app Expo, cole o convite no campo de acesso.</p><a className="button primary" target="_blank" rel="noreferrer" href={invite?inviteUrl(invite):'#'}>Abrir aplicativo <ExternalLink size={16}/></a><button className="text-button" onClick={()=>copy(inviteUrl(invite))}><Copy size={15}/> Copiar convite</button></div></div></>:<p>Você acessou por convite. Para conectar outros participantes, use os convites fornecidos por quem criou este ambiente.</p>}</Modal>}
- {modal==='revise'&&<Modal title="Preparar uma nova distribuição" onClose={()=>setModal('')}><div className="modal-illustration"><Sprout size={50}/><ArrowRight size={25}/><School size={45}/></div><p>As quantidades confirmadas serão distribuídas respeitando a necessidade de cada escola e os limites dos fornecedores.</p><p>A versão atual será preservada no histórico. Os produtores precisarão confirmar os novos compromissos. Se faltar alimento, a quantidade descoberta continuará visível.</p><div className="modal-actions"><button className="button secondary" onClick={()=>setModal('')}>Voltar</button><button className="button primary" disabled={busy} onClick={()=>command('propose')}>{busy?'Preparando…':'Preparar revisão'} <ArrowRight size={17}/></button></div></Modal>}
- {modal==='delivery'&&selected&&<Modal title="Detalhes da entrega" onClose={()=>setModal('')}><div className="detail-hero"><span className={`food-icon ${selected.product}`}><ProductIcon id={selected.product} size={30}/></span><div><span className="eyebrow">{selected.id.toUpperCase()}</span><h3>{s.products.find((p:any)=>p.id===selected.product).name}</h3></div><strong>{kg(selected.qty)}<small>kg</small></strong></div><dl className="detail-list"><div><dt>Quem entrega</dt><dd>{s.suppliers.find((x:any)=>x.id===selected.supplier).name}</dd></div><div><dt>Quem recebe</dt><dd>{s.schools.find((x:any)=>x.id===selected.school).name}</dd></div><div><dt>Data e horário</dt><dd>12 de novembro · {selected.time}</dd></div><div><dt>Situação</dt><dd>{statusLabel[selected.status]}</dd></div></dl>{selected.receipt&&<div className="receipt-summary"><strong>Conferência registrada</strong><p>{kg(selected.receipt.accepted)} kg aceitos · {kg(selected.receipt.rejected)} kg rejeitados</p>{selected.receipt.note&&<p>{selected.receipt.note}</p>}</div>}{s.plan.status==='draft'&&<label className="field-label">Ajustar quantidade prevista em kg<input inputMode="decimal" value={adjust} placeholder={String(selected.qty)} onChange={e=>setAdjust(e.target.value)}/><button className="button primary" disabled={busy||!adjust} onClick={()=>command('allocate',{id:selected.id,qty:adjust})}>Salvar ajuste e renovar confirmações</button></label>}{selected.receipt&&(selected.receipt.rejected>0||selected.receipt.delivered<selected.qty)&&!selected.resolution&&<label className="field-label">Encaminhamento da divergência<textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Descreva a decisão e os próximos passos"/><button disabled={busy} className="button primary" onClick={()=>command('resolve',{id:selected.id,note})}>Registrar encaminhamento</button></label>}</Modal>}
- {modal==='school'&&selected?.school&&<Modal title={selected.school.name} onClose={()=>setModal('')}><p className="modal-intro">{kg(accepted(selected.school.id))} de {kg(expected(selected.school.id))} kg recebidos e aceitos neste ciclo.</p>{s.deliveries.filter((d:any)=>d.school===selected.school.id).map((d:any)=><div key={d.id} className="school-delivery"><ProductIcon id={d.product}/><div><strong>{s.products.find((p:any)=>p.id===d.product).name}</strong><small>{s.suppliers.find((p:any)=>p.id===d.supplier).short}</small></div><strong>{kg(d.qty)} kg</strong><span className={`status ${d.status}`}>{statusLabel[d.status]}</span></div>)}</Modal>}
- {modal==='notifications'&&<Modal title="Atualizações da rede" onClose={()=>setModal('')}><div className="timeline">{s.events.slice(0,8).map((e:any)=><div key={e.id}><span className="timeline-icon"><Leaf size={15}/></span><div><strong>{e.title}</strong><p>{e.detail}</p><small>{e.actor}</small></div></div>)}</div></Modal>}
- {modal==='cycle'&&<Modal title="Ciclo 24 · novembro de 2026" onClose={()=>setModal('')}><p className="modal-intro">O cenário acadêmico acompanha uma semana de abastecimento. A agenda de entregas está marcada para 12 de novembro.</p><div className="week-calendar">{['SEG 09','TER 10','QUA 11','QUI 12','SEX 13'].map((d,i)=><span className={i===3?'selected':''} key={d}>{d.split(' ')[0]}<strong>{d.split(' ')[1]}</strong>{i===3?<Truck size={17}/>:<span>·</span>}</span>)}</div><p>Versão {s.plan.version} · {s.plan.status==='published'?'Publicada':'Em revisão'} · {s.schools.length} escolas</p></Modal>}
- {modal==='workspace'&&<Modal title="Seu ambiente de demonstração" onClose={()=>setModal('')}><p>Os dados deste ambiente são fictícios e ficam isolados dos outros ambientes criados. Compartilhe os convites para testar a integração com sua equipe.</p><button className="button secondary" onClick={()=>{setModal('connect');setInvite(session?.invites?.find(x=>x.role==='supplier'))}}><Smartphone size={17}/> Conectar participantes</button><p className="muted">Para começar um novo cenário, preserve os convites que ainda deseja usar.</p><button className="text-button" onClick={async()=>{const r=await fetch('/api/create',{method:'POST'});if(r.ok){const next=await r.json();localStorage.setItem(KEY,JSON.stringify(next));setSession(next);setModal('');setToast('Novo cenário criado. O anterior foi preservado.');}}}><Plus size={16}/> Criar outro ambiente</button></Modal>}
- </div></MotionConfig>;
+import { useEffect, useRef, useState } from "react";
+import {
+  AnimatePresence,
+  motion,
+  MotionConfig,
+  useReducedMotion,
+} from "motion/react";
+import {
+  LayoutDashboard,
+  CalendarDays,
+  Truck,
+  School,
+  Users,
+  ChartNoAxesCombined,
+  BookOpen,
+  Smartphone,
+  ArrowRight,
+  Pause,
+  Play,
+  Bell,
+  Menu,
+  RefreshCw,
+  WifiOff,
+  Info,
+  X,
+} from "lucide-react";
+import type { Session, Snapshot, View } from "./types";
+import { dateLabel, normalizeView, timeLabel, viewNames } from "./model";
+import { Brand, Dialog } from "./components/ui";
+import {
+  WorkspaceDialogs,
+  type DialogKind,
+} from "./components/WorkspaceDialogs";
+import {
+  Overview,
+  Planning,
+  Deliveries,
+  Schools,
+  Suppliers,
+  Reports,
+} from "./pages/WorkspacePages";
+import { Guide } from "./pages/Guide";
+const KEY = "abastece-coordinator-session-v1";
+const navigation = [
+  ["overview", "Visão geral", LayoutDashboard],
+  ["plan", "Planejamento", CalendarDays],
+  ["deliveries", "Entregas", Truck],
+  ["schools", "Escolas", School],
+  ["suppliers", "Produtores", Users],
+  ["reports", "Relatório do ciclo", ChartNoAxesCombined],
+] as const;
+const descriptions: Record<View, string> = {
+  overview: "Necessidades, compromissos e recebimentos da rede em um só lugar.",
+  plan: "Compare o que as escolas precisam com o que cada produtor pode fornecer.",
+  deliveries:
+    "Acompanhe a saída, a conferência e as diferenças registradas em cada entrega.",
+  schools: "Consulte a necessidade e os recebimentos de cada unidade escolar.",
+  suppliers:
+    "Confira capacidades, compromissos e confirmações dos fornecedores.",
+  reports:
+    "Veja as quantidades conferidas, investigue diferenças e exporte os registros.",
+  guide:
+    "Entenda o problema, os papéis de cada participante e como testar a solução.",
+};
+
+export default function App() {
+  const [session, setSession] = useState<Session | null>(null),
+    [snap, setSnap] = useState<Snapshot | null>(null);
+  const [view, setView] = useState<View>(() =>
+    normalizeView(new URLSearchParams(location.search).get("view")),
+  );
+  const [busy, setBusy] = useState(false),
+    [online, setOnline] = useState(true),
+    [error, setError] = useState(""),
+    [toast, setToast] = useState(""),
+    [updated, setUpdated] = useState("");
+  const [dialog, setDialog] = useState<DialogKind>(null),
+    [selectedId, setSelectedId] = useState(""),
+    [inviteId, setInviteId] = useState(""),
+    [mobileNav, setMobileNav] = useState(false),
+    [paused, setPaused] = useState(false);
+  const reduced = useReducedMotion(),
+    sessionRef = useRef<Session | null>(null),
+    snapshotRef = useRef<Snapshot | null>(null),
+    heading = useRef<HTMLHeadingElement>(null),
+    hasNavigated = useRef(false);
+  sessionRef.current = session;
+  snapshotRef.current = snap;
+  useEffect(() => {
+    let active = true;
+    const init = async () => {
+      try {
+        const incoming = new URLSearchParams(location.hash.slice(1));
+        let restored: Session | null = null;
+        if (incoming.get("access")) {
+          restored = {
+            room: new URLSearchParams(location.search).get("room") || "",
+            token: incoming.get("access")!,
+          };
+          history.replaceState({}, "", location.pathname + "?view=" + view);
+        } else {
+          try {
+            restored = JSON.parse(localStorage.getItem(KEY) || "null");
+          } catch {}
+        }
+        if (!restored?.room || !restored?.token) {
+          const response = await fetch("/api/create", { method: "POST" });
+          if (!response.ok)
+            throw Error(
+              "Não foi possível criar o ambiente. Verifique a conexão e tente novamente.",
+            );
+          restored = await response.json();
+        }
+        if (active && restored) {
+          try {
+            localStorage.setItem(KEY, JSON.stringify(restored));
+          } catch {}
+          setSession(restored);
+        }
+      } catch (e) {
+        if (active)
+          setError(
+            e instanceof Error
+              ? e.message
+              : "Não foi possível abrir o ambiente.",
+          );
+      }
+    };
+    init();
+    return () => {
+      active = false;
+    };
+  }, []);
+  useEffect(() => {
+    const onBack = () => {
+      hasNavigated.current = true;
+      setView(normalizeView(new URLSearchParams(location.search).get("view")));
+      setDialog(null);
+      setMobileNav(false);
+    };
+    window.addEventListener("popstate", onBack);
+    return () => window.removeEventListener("popstate", onBack);
+  }, []);
+  useEffect(() => {
+    document.title = viewNames[view] + " · Abastece Escola";
+    if (hasNavigated.current && snap)
+      heading.current?.focus({ preventScroll: true });
+  }, [view, !!snap]);
+  async function refresh(access: Session | null = sessionRef.current) {
+    if (!access) return;
+    try {
+      const response = await fetch(
+        "/api/snapshot?room=" + encodeURIComponent(access.room),
+        { headers: { authorization: "Bearer " + access.token } },
+      );
+      const body = await response.json();
+      if (!response.ok)
+        throw Error(body.error || "Não foi possível consultar os dados.");
+      if (sessionRef.current?.token !== access.token) return;
+      if (body.actor.role !== "coordinator") {
+        location.replace(
+          "/app/?room=" + access.room + "#access=" + access.token,
+        );
+        return;
+      }
+      setSnap((current) =>
+        !current || body.revision >= current.revision ? body : current,
+      );
+      setOnline(true);
+      setUpdated(new Date().toISOString());
+    } catch (e) {
+      if (sessionRef.current?.token === access.token) {
+        setOnline(false);
+        if (!snapshotRef.current)
+          setError(
+            e instanceof Error
+              ? e.message
+              : "O serviço de dados não respondeu.",
+          );
+      }
+    }
+  }
+  useEffect(() => {
+    if (!session) return;
+    refresh(session);
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") refresh(session);
+    }, 1800);
+    const onFocus = () => refresh(session);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [session]);
+  useEffect(() => {
+    if (!toast) return;
+    const timeout = setTimeout(() => setToast(""), 6500);
+    return () => clearTimeout(timeout);
+  }, [toast]);
+  function navigate(next: View) {
+    if (next !== view) {
+      history.pushState({}, "", "/coordenacao?view=" + next);
+      hasNavigated.current = true;
+      setView(next);
+    }
+    setMobileNav(false);
+    setDialog(null);
+    setError("");
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+  function open(kind: DialogKind, id = "") {
+    setError("");
+    setSelectedId(id);
+    setDialog(kind);
+    setMobileNav(false);
+  }
+  function connect(id?: string) {
+    setInviteId(
+      id || session?.invites?.find((x) => x.role === "supplier")?.id || "",
+    );
+    open("connect");
+  }
+  async function command(type: string, payload: Record<string, unknown> = {}) {
+    if (!session || !snap || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/command", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: "Bearer " + session.token,
+        },
+        body: JSON.stringify({
+          room: session.room,
+          revision: snap.revision,
+          operationId: crypto.randomUUID(),
+          type,
+          payload,
+        }),
+      });
+      const body = await response.json();
+      if (!response.ok)
+        throw Error(body.error || "A alteração não foi concluída.");
+      setSnap((current) =>
+        !current || body.revision >= current.revision ? body : current,
+      );
+      setUpdated(new Date().toISOString());
+      setOnline(true);
+      setDialog(null);
+      setToast(
+        type === "publish"
+          ? "Plano publicado. As agendas das escolas foram atualizadas."
+          : type === "propose"
+            ? "Revisão preparada. Os produtores precisam confirmar a nova versão no app."
+            : type === "resolve"
+              ? "Encaminhamento registrado no recebimento."
+              : "Distribuição ajustada. Os produtores precisam confirmar a nova versão.",
+      );
+    } catch (e) {
+      await refresh();
+      setError(
+        e instanceof Error ? e.message : "Não foi possível salvar a alteração.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function createDemo() {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/create", { method: "POST" });
+      if (!response.ok)
+        throw Error("Não foi possível criar a demonstração. Tente novamente.");
+      const access: Session = await response.json();
+      try {
+        localStorage.setItem(KEY, JSON.stringify(access));
+      } catch {}
+      setSnap(null);
+      setSession(access);
+      setDialog(null);
+      setToast("Nova demonstração criada. O ambiente anterior foi preservado.");
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "Não foi possível criar o ambiente.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+  if (!snap || !session)
+    return (
+      <div className="loading-page">
+        <Brand />
+        <main>
+          <span className="eyebrow">Coordenação do abastecimento escolar</span>
+          <h1>
+            {error
+              ? "Não foi possível abrir o ambiente"
+              : "Carregando o abastecimento…"}
+          </h1>
+          <p>
+            {error ||
+              "Consultando as necessidades das escolas e os registros deste ciclo."}
+          </p>
+          {error && (
+            <div className="loading-actions">
+              <button
+                className="button primary"
+                onClick={() => {
+                  setError("");
+                  session ? refresh() : location.reload();
+                }}
+              >
+                Tentar novamente
+              </button>
+              <button
+                className="button secondary"
+                disabled={busy}
+                onClick={createDemo}
+              >
+                Criar nova demonstração
+              </button>
+            </div>
+          )}
+        </main>
+        <p className="loading-disclaimer">
+          Projeto acadêmico · escolas e dados fictícios
+        </p>
+      </div>
+    );
+  const s = snap.state;
+  const props = {
+    state: s,
+    onNavigate: navigate,
+    onDelivery: (id: string) => open("delivery", id),
+    onSchool: (id: string) => open("school", id),
+    onConnect: connect,
+  };
+  function nav() {
+    return (
+      <>
+        <a
+          className="brand-link"
+          href="/coordenacao?view=overview"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("overview");
+          }}
+          aria-label="Abastece Escola — visão geral"
+        >
+          <Brand />
+        </a>
+        <div className="workspace-name">
+          <span className="workspace-symbol">
+            <School size={21} />
+          </span>
+          <div>
+            <strong>{s.name}</strong>
+            <span>Coordenação escolar</span>
+          </div>
+        </div>
+        <nav className="workspace-navigation" aria-label="Navegação principal">
+          {navigation.map(([id, label, Icon]) => (
+            <a
+              key={id}
+              href={"/coordenacao?view=" + id}
+              aria-current={view === id ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(id);
+              }}
+            >
+              <Icon size={20} aria-hidden="true" />
+              {label}
+            </a>
+          ))}
+        </nav>
+        <div className="sidebar-utilities">
+          <button
+            className={
+              view === "guide" ? "utility-link current" : "utility-link"
+            }
+            onClick={() => navigate("guide")}
+          >
+            <BookOpen size={19} />
+            Como usar este ambiente
+          </button>
+          <div className="app-access">
+            <Smartphone size={25} />
+            <h2>Produtores e escolas no aplicativo</h2>
+            <p>
+              Abra um convite para acompanhar os mesmos registros em outro
+              dispositivo.
+            </p>
+            <button onClick={() => connect()}>
+              Conectar aplicativo
+              <ArrowRight size={16} />
+            </button>
+          </div>
+          <button className="account-access" onClick={() => open("workspace")}>
+            <span>CO</span>
+            <div>
+              <strong>Coordenação</strong>
+              <small>Gerenciar demonstração</small>
+            </div>
+          </button>
+        </div>
+      </>
+    );
+  }
+  return (
+    <MotionConfig reducedMotion="user">
+      <div
+        className={"app-layout " + (paused || reduced ? "motion-paused" : "")}
+      >
+        <a className="skip-link" href="#main">
+          Ir para o conteúdo
+        </a>
+        <aside className="sidebar">{nav()}</aside>
+        <div className="main-layout">
+          <header className="topbar">
+            <div className="topbar-context">
+              <button
+                className="icon-button mobile-menu"
+                aria-label="Abrir menu de navegação"
+                onClick={() => setMobileNav(true)}
+              >
+                <Menu size={22} />
+              </button>
+              <span className="topbar-title">{s.name}</span>
+              <span className="topbar-divider">/</span>
+              <span className="topbar-section">
+                {view === "guide" ? "Guia do projeto" : viewNames[view]}
+              </span>
+            </div>
+            <div className="topbar-actions">
+              <span className={"sync-label " + (!online ? "offline" : "")}>
+                <i />
+                {online ? "Dados atualizados" : "Sem conexão"}
+              </span>
+              <button
+                className="icon-button refresh-button"
+                aria-label="Atualizar dados"
+                onClick={() => refresh()}
+                title={
+                  updated
+                    ? "Última consulta às " + timeLabel(updated)
+                    : "Atualizar dados"
+                }
+              >
+                <RefreshCw size={18} />
+              </button>
+              <button
+                className="icon-button motion-button"
+                onClick={() => setPaused(!paused)}
+                aria-label={
+                  paused
+                    ? "Ativar animações ambiente"
+                    : "Pausar animações ambiente"
+                }
+                aria-pressed={paused}
+              >
+                {paused ? <Play size={18} /> : <Pause size={18} />}
+              </button>
+              <button
+                className="icon-button"
+                aria-label="Ver atualizações do ambiente"
+                onClick={() => open("updates")}
+              >
+                <Bell size={19} />
+              </button>
+            </div>
+          </header>
+          <div className="demo-banner">
+            <Info size={15} />
+            <span>
+              Demonstração acadêmica. Escolas, produtores e quantidades são
+              fictícios.
+            </span>
+            <button onClick={() => navigate("guide")}>
+              Entender o cenário
+              <ArrowRight size={14} />
+            </button>
+          </div>
+          <main id="main" className="page-content" tabIndex={-1}>
+            <div className="page-heading">
+              <div>
+                <h1 ref={heading} tabIndex={-1}>
+                  {viewNames[view]}
+                </h1>
+                <p>{descriptions[view]}</p>
+              </div>
+              <button className="period-button" onClick={() => open("cycle")}>
+                <CalendarDays size={18} />
+                <span>
+                  {dateLabel(s.cycle.start)} — {dateLabel(s.cycle.end)}, 2026
+                </span>
+                <Info size={15} />
+              </button>
+            </div>
+            {!online && (
+              <div className="connection-notice" role="status">
+                <WifiOff size={20} />
+                <span>
+                  Sem conexão com o serviço. Você está vendo a última consulta.
+                  As alterações precisam de conexão.
+                </span>
+                <button onClick={() => refresh()} className="text-button">
+                  Tentar atualizar
+                </button>
+              </div>
+            )}
+            {error && !dialog && (
+              <div className="form-error page-error" role="alert">
+                <span>{error}</span>
+                <button
+                  className="icon-button"
+                  aria-label="Dispensar erro"
+                  onClick={() => setError("")}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            )}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={view}
+                className="page-sections"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: reduced ? 0 : 0.12 }}
+              >
+                {view === "overview" && <Overview {...props} />}{" "}
+                {view === "plan" && (
+                  <Planning
+                    {...props}
+                    onRevise={() => open("revise")}
+                    onPublish={() => command("publish")}
+                    busy={busy}
+                    online={online}
+                  />
+                )}{" "}
+                {view === "deliveries" && <Deliveries {...props} />}{" "}
+                {view === "schools" && <Schools {...props} />}{" "}
+                {view === "suppliers" && <Suppliers {...props} />}{" "}
+                {view === "reports" && <Reports {...props} />}{" "}
+                {view === "guide" && <Guide {...props} />}
+              </motion.div>
+            </AnimatePresence>
+            <footer className="page-footer">
+              <div>
+                <Brand />
+                <p>Planejamento e conferência do abastecimento escolar.</p>
+              </div>
+              <div>
+                <a href="/" className="workspace-site-link">
+                  Site do projeto ↗
+                </a>
+                <button onClick={() => navigate("guide")}>Como usar</button>
+                <button onClick={() => connect()}>Acessar aplicativo</button>
+                <span>Projeto acadêmico · {s.name}</span>
+              </div>
+            </footer>
+          </main>
+        </div>
+        {mobileNav && (
+          <Dialog
+            title="Navegação"
+            className="navigation-dialog"
+            onClose={() => setMobileNav(false)}
+          >
+            <div className="mobile-navigation-content">{nav()}</div>
+          </Dialog>
+        )}
+        {dialog && (
+          <WorkspaceDialogs
+            key={dialog + selectedId}
+            kind={dialog}
+            state={s}
+            session={session}
+            selectedId={selectedId}
+            inviteId={inviteId}
+            onInvite={setInviteId}
+            onClose={() => {
+              setDialog(null);
+              setError("");
+            }}
+            onCommand={command}
+            onNewDemo={createDemo}
+            onConnect={connect}
+            busy={busy}
+            online={online}
+            error={error}
+            onFeedback={setToast}
+          />
+        )}{" "}
+        {toast && (
+          <div className="toast" role="status">
+            <span>{toast}</span>
+            <button
+              className="icon-button"
+              aria-label="Fechar confirmação"
+              onClick={() => setToast("")}
+            >
+              <X size={18} />
+            </button>
+          </div>
+        )}
+      </div>
+    </MotionConfig>
+  );
 }

@@ -1,72 +1,2005 @@
-import React,{useState,useEffect,useRef} from 'react';
-import {View,Text,ScrollView,Pressable,TextInput,Modal,Animated,StyleSheet,Platform,AppState,AccessibilityInfo,Linking,Share,ActivityIndicator,KeyboardAvoidingView,useWindowDimensions} from 'react-native';
-import {StatusBar} from 'expo-status-bar';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Svg,{Path,Circle,Rect,Line,G} from 'react-native-svg';
-type Session={room:string;token:string;invites?:any[];base:string};
-const C={green:'#244734',text:'#29432f',muted:'#65765b',bg:'#f5f6ee',lime:'#d8e9ac',line:'#e0e6d5',amber:'#8c6928'};
-const fmt=(n:number)=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n);
-const op=()=>Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
-const PUBLIC_API='https://abastece-escola.toughazure1.chatgpt.site';
-function defaultBase(){if(Platform.OS==='web'){const l=(globalThis as any).location;return l.hostname==='localhost'||l.hostname==='127.0.0.1'?`http://${l.hostname}:4181`:l.origin;}return process.env.EXPO_PUBLIC_API_URL||PUBLIC_API;}
-function Icon({name,size=22,color=C.green}:{name:string;size?:number;color?:string}){const paths:Record<string,string>={leaf:'M12 22V10M12 15C2 15 2 5 2 5s10-1 10 10M12 10C21 10 22 1 22 1s-10 0-10 9',home:'m3 10 9-7 9 7v11h-6v-8H9v8H3Z',box:'m3 7 9-4 9 4-9 4Zm0 0v11l9 4 9-4V7M12 11v11',truck:'M1 5h13v12H1ZM14 9h5l4 5v3h-9M5 17a2 2 0 1 0 .1 0M18 17a2 2 0 1 0 .1 0',check:'m5 12 4 4L20 5',arrow:'M4 12h16m-6-6 6 6-6 6',back:'M20 12H4m6-6-6 6 6 6',clock:'M12 7v6l4 2M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',calendar:'M4 5h16v16H4ZM8 2v6m8-6v6M4 10h16',user:'M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0M4 22v-3a8 8 0 0 1 16 0v3',school:'m2 9 10-7 10 7M4 8v14h16V8M10 22v-7h4v7M8 10h1m6 0h1M12 2v7',carrot:'m7 7 10 3-14 12ZM14 7l3-5m0 8 5-2m-8-1 6-5',banana:'M20 3C18 14 10 20 3 15c1 9 18 10 19-10Zm-1 0 2-1',alert:'m12 2 11 20H1ZM12 9v5m0 3v1',close:'m5 5 14 14M19 5 5 19',link:'m10 14 4-4M8 16l-2 2a4 4 0 0 1-5-5l5-5a4 4 0 0 1 5 0m2 3a4 4 0 0 0 5 0l5-5a4 4 0 0 0-5-5l-2 2',refresh:'M20 7a9 9 0 1 0 0 10M20 2v6h-6',wifi:'M2 8a16 16 0 0 1 20 0M5 12a11 11 0 0 1 14 0M8 16a6 6 0 0 1 8 0m-4 4h.01',copy:'M8 8h14v14H8ZM3 16H1V1h15v2'};return <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" accessibilityElementsHidden><Path d={paths[name]||paths.leaf}/></Svg>;}
-function Garden(){return <Svg width="100%" height={160} viewBox="0 0 400 160" accessibilityElementsHidden><Circle cx="318" cy="41" r="30" fill="#D9E8A8"/><Path d="M-30 140Q90 20 260 111T440 77V200H-30Z" fill="#A9BD7D"/><Path d="M-30 175Q130 65 295 135T450 94V200H-30Z" fill="#6C8A51"/><Path d="M150 160q100-48 240-15" stroke="#e1e7c5" strokeWidth={18} fill="none"/><G x={267} y={63}><Path d="M0 55V13L23-3l24 16v42Z" fill="#f8f4e4"/><Path d="m-5 14 28-21 29 21" stroke="#244734" strokeWidth={3} fill="none"/><Path d="M18 55V32h11v23" fill="#244734"/><Rect x={6} y={23} width={7} height={9} fill="#91aa71"/><Rect x={34} y={23} width={7} height={9} fill="#91aa71"/></G><G x={95} y={57}><Path d="M0 66V15M0 42C-23 42-21 19-21 19S0 19 0 42M0 26C19 26 21 5 21 5S0 5 0 26" fill="#244734" stroke="#244734" strokeWidth={1.5}/></G><G x={180} y={116}><Path d="M0 0h31v20H0Zm31 7h11l9 9v4H31Z" fill="#eee5ca" stroke="#244734" strokeWidth={1.4}/><Circle cx={8} cy={21} r={4} fill="#244734"/><Circle cx={41} cy={21} r={4} fill="#244734"/></G></Svg>;}
-function Btn({label,onPress,secondary=false,disabled=false,icon='arrow'}:{label:string;onPress:()=>void;secondary?:boolean;disabled?:boolean;icon?:string}){return <Pressable accessibilityRole="button" accessibilityState={{disabled}} disabled={disabled} onPress={onPress} style={({pressed})=>[st.button,secondary&&st.secondary,pressed&&{opacity:.8,transform:[{scale:.99}]},disabled&&{opacity:.45}]}><Text style={[st.buttonText,secondary&&{color:C.green}]}>{label}</Text><Icon name={icon} size={18} color={secondary?C.green:'#fff'}/></Pressable>}
-export default function App(){
- const [session,setSession]=useState<Session|null>(null),[snap,setSnap]=useState<any>(null),[tab,setTab]=useState('home'),[error,setError]=useState(''),[toast,setToast]=useState(''),[busy,setBusy]=useState(false),[online,setOnline]=useState(true),[sheet,setSheet]=useState(''),[selected,setSelected]=useState<any>(null),[value,setValue]=useState(''),[reject,setReject]=useState('0'),[note,setNote]=useState(''),[inviteInput,setInviteInput]=useState(''),[queue,setQueue]=useState<any>(null),[reduce,setReduce]=useState(false),[ready,setReady]=useState(false);
- const fade=useRef(new Animated.Value(1)).current;const current=useRef<any>(null);current.current={snap,session};const {width}=useWindowDimensions();
- useEffect(()=>{AccessibilityInfo.isReduceMotionEnabled().then(setReduce);const listener=AccessibilityInfo.addEventListener('reduceMotionChanged',setReduce);const init=async()=>{try{const l=(globalThis as any).location;let loaded=null;if(Platform.OS==='web'&&l?.hash.includes('access=')){const hash=new URLSearchParams(l.hash.slice(1));loaded={base:defaultBase(),room:new URLSearchParams(l.search).get('room')||'',token:hash.get('access')};(globalThis as any).history.replaceState({},'',l.pathname);}else{loaded=JSON.parse(await AsyncStorage.getItem('abastece-mobile-session')||'null');}if(loaded)setSession(loaded);const q=JSON.parse(await AsyncStorage.getItem('abastece-pending-receipt')||'null');setQueue(q);}catch{setError('Não foi possível recuperar o acesso salvo. Cole seu convite novamente.')}setReady(true)};init();return()=>listener.remove()},[]);
- useEffect(()=>{if(!session)return;AsyncStorage.setItem('abastece-mobile-session',JSON.stringify(session));refresh(session);const timer=setInterval(()=>{if(AppState.currentState==='active')refresh(session)},1800);const listener=AppState.addEventListener('change',state=>{if(state==='active')refresh(session)});return()=>{clearInterval(timer);listener.remove()}},[session]);
- useEffect(()=>{if(reduce){fade.setValue(1);return;}fade.setValue(0);Animated.timing(fade,{toValue:1,duration:240,useNativeDriver:true}).start()},[tab,reduce]);
- useEffect(()=>{if(!toast)return;AccessibilityInfo.announceForAccessibility(toast);const t=setTimeout(()=>setToast(''),6000);return()=>clearTimeout(t)},[toast]);
- async function refresh(se=session){if(!se)return;try{const r=await fetch(`${se.base}/api/snapshot?room=${se.room}`,{headers:{authorization:`Bearer ${se.token}`}});const b=await r.json();if(!r.ok)throw Object.assign(Error(b.error),{status:r.status});setSnap(b);setOnline(true);await AsyncStorage.setItem('abastece-last-snapshot',JSON.stringify({room:se.room,token:se.token,actor:b.actor,state:b.state,revision:b.revision}));}catch(e:any){setOnline(false);if(!current.current.snap){const cached=JSON.parse(await AsyncStorage.getItem('abastece-last-snapshot')||'null');if(cached?.room===se.room&&cached?.token===se.token)setSnap(cached);else setError(e.message||'Sem conexão. Tente novamente.');}}}
- async function createDemo(){setBusy(true);try{const base=defaultBase();const r=await fetch(base+'/api/create',{method:'POST'});if(!r.ok)throw Error('Não foi possível criar a demonstração.');const b=await r.json();const actor=b.invites.find((i:any)=>i.id==='p1');setSession({base,room:b.room,token:actor.token,invites:b.invites});setError('');}catch(e:any){setError(e.message)}finally{setBusy(false)}}
- async function openInvite(){try{const url=new URL(inviteInput.trim());const token=new URLSearchParams(url.hash.slice(1)).get('access');const room=url.searchParams.get('room');if(!token||!room)throw Error('Cole o convite completo compartilhado pela coordenação.');if(url.protocol!=='https:'&&!(url.protocol==='http:'&&/^(localhost|127\.0\.0\.1|192\.168\.)/.test(url.hostname)))throw Error('O convite precisa usar uma conexão segura.');setSnap(null);setSession({base:url.origin,room,token});setSheet('');setError('');}catch(e:any){setError(e.message||'Convite inválido.')}}
- async function send(type:string,payload:any={},fromQueue?:any){if(!session||!snap)return;setBusy(true);setError('');const command=fromQueue?.command||{room:session.room,revision:snap.revision,operationId:op(),type,payload};try{const r=await fetch(session.base+'/api/command',{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${session.token}`},body:JSON.stringify(command)});const b=await r.json();if(!r.ok)throw Object.assign(Error(b.error),{status:r.status});setSnap(b);setOnline(true);setSheet('');if(type==='receive'){setQueue(null);await AsyncStorage.removeItem('abastece-pending-receipt');}setToast(type==='capacity'?'Quantidade confirmada. A coordenação já pode acompanhar.':type==='accept'?'Proposta confirmada. Seu compromisso está registrado.':type==='dispatch'?'Saída registrada. A escola já foi avisada.':'Recebimento sincronizado com a coordenação.');}catch(e:any){if(!e.status&&type==='receive'&&!fromQueue){const q={room:session.room,token:session.token,command};setQueue(q);await AsyncStorage.setItem('abastece-pending-receipt',JSON.stringify(q));setSheet('');setToast('Conferência salva neste aparelho. Pendente de envio.');setOnline(false);}else{setError(e.message||'Não foi possível enviar.');if(e.status===409)refresh();}}finally{setBusy(false)}}
- async function replay(){if(!queue||!session)return;if(queue.room!==session.room||queue.token!==session.token){setError('Há uma anotação pendente de outro acesso. Entre pelo convite original para revisar.');return;}await send('receive',{},queue)}
- async function discardPending(){await AsyncStorage.removeItem('abastece-pending-receipt');setQueue(null);setError('');setToast('Anotação local descartada. O registro do servidor foi preservado.');}
- const close=()=>{setSheet('');setError('')};
- const heroTitle=snap?.actor.role==='supplier'?'Quem cultiva,\nconecta.':'Receber bem\né alimentar.';
- const isSupplier=snap?.actor.role==='supplier';const s=snap?.state;
- const supplier=s?.suppliers.find((p:any)=>p.id===snap.actor.id);const school=s?.schools.find((p:any)=>p.id===snap.actor.id);
- const list=s?.deliveries||[];const total=list.reduce((n:number,d:any)=>n+d.qty,0),done=list.filter((d:any)=>d.status==='received').length;
- const canAccept=isSupplier&&s?.plan.status==='draft'&&s?.plan.accepts[snap.actor.id]!==s?.plan.version;
- const ownUrl=(actor:any)=>`${session!.base}${actor.role==='coordinator'?'/':'/app/'}?room=${session!.room}#access=${actor.token}`;
- const openDelivery=(d:any)=>{setSelected(d);setValue(String(d.qty));setReject('0');setNote('');setSheet('delivery')};
- if(!ready)return <View style={st.center}><ActivityIndicator color={C.green}/></View>;
- if(!session||!snap)return <View style={st.screen}><StatusBar style="dark"/><ScrollView contentContainerStyle={[st.welcome,{minHeight:'100%'}]} keyboardShouldPersistTaps="handled"><View style={st.logo}><Icon name="leaf" size={33}/><View><Text style={st.logoName}>abastece</Text><Text style={st.logoSub}>ESCOLA</Text></View></View><View style={st.welcomeArt}><Garden/></View><Text accessibilityRole="header" style={st.welcomeTitle}>O campo e a escola,{"\n"}<Text style={{fontStyle:'italic',color:'#718d52'}}>mais próximos.</Text></Text><Text style={st.welcomeText}>Confirme sua colheita, acompanhe as entregas e faça parte de uma rede que alimenta.</Text><View style={st.welcomeBox}><Text style={st.label}>SEU PRÓXIMO PASSO</Text><Text style={st.welcomeBoxTitle}>Recebeu um convite?</Text><TextInput accessibilityLabel="Convite de acesso" placeholder="Cole aqui o convite da coordenação" placeholderTextColor="#819074" value={inviteInput} onChangeText={setInviteInput} autoCapitalize="none" style={st.input}/><Btn label="Entrar com convite" onPress={openInvite}/></View><Pressable accessibilityRole="button" onPress={createDemo} disabled={busy} style={st.demoButton}><Text style={st.demoText}>{busy?'Preparando demonstração…':'Conhecer com dados de exemplo'}</Text><Icon name="arrow" size={16}/></Pressable>{session&&!snap&&<Text style={st.muted}>Carregando as entregas do seu acesso…</Text>}{error?<Text accessibilityRole="alert" style={st.error}>{error}</Text>:null}<Text style={st.welcomeFooter}>PROJETO ACADÊMICO · DADOS FICTÍCIOS</Text></ScrollView></View>;
- return <View style={st.screen}><StatusBar style="dark"/><View style={st.mobileContainer}><View style={st.header}><View style={st.logo}><Icon name="leaf" size={28}/><View><Text style={st.logoName}>abastece</Text><Text style={st.logoSub}>ESCOLA</Text></View></View><Pressable style={st.profileButton} accessibilityLabel="Abrir acesso e informações" accessibilityRole="button" onPress={()=>setTab('account')}><Text style={st.profileText}>{isSupplier? supplier?.initials:school?.initials||'CO'}</Text></Pressable></View><View style={st.connectionBar}><View style={[st.connectionDot,!online&&{backgroundColor:'#bc8c44'}]}/><Text style={st.connectionText}>{online?'Conectado à Rede do Vale':'Sem conexão · dados da última atualização'}</Text><Text style={st.cycleSmall}>CICLO 24</Text></View>
- <ScrollView style={{flex:1}} contentContainerStyle={st.content} keyboardShouldPersistTaps="handled"><Animated.View style={{opacity:fade,transform:[{translateY:fade.interpolate({inputRange:[0,1],outputRange:reduce?[0,0]:[9,0]})}]}}>
- {error?<View accessibilityRole="alert" style={st.errorBox}><Icon name="alert" size={18} color="#985b34"/><Text style={st.error}>{error}</Text></View>:null}
- {queue&&<View style={st.pendingBox}><View style={{flexDirection:'row',gap:8,alignItems:'center'}}><Icon name="clock" size={20} color={C.amber}/><Text style={st.pendingTitle}>Conferência pendente de envio</Text></View><Text style={st.pendingText}>Sua anotação está salva neste aparelho. Envie ao recuperar a conexão.</Text><Btn label="Tentar sincronizar" onPress={replay} disabled={busy} secondary icon="refresh"/><Pressable accessibilityRole="button" onPress={discardPending} style={{paddingVertical:14}}><Text style={st.smallLink}>Descartar somente a anotação local</Text></Pressable></View>}
- {tab==='home'&&<><Text style={st.greeting}>Olá, {isSupplier?supplier?.person.split(' ')[0]:'equipe da escola'} <Text style={{color:'#8fa36e'}}>☀</Text></Text><View style={st.hero}><View style={st.heroText}><Text style={st.label}>DO CAMPO AO PRATO</Text><Text accessibilityRole="header" style={st.heroTitle}>{heroTitle}</Text><Text style={st.heroSubtitle}>{isSupplier?'Cada compromisso seu faz\ndiferença na mesa da escola.':'Cada conferência cuida do\nalimento que chega à mesa.'}</Text></View><View style={st.garden}><Garden/></View></View><View style={st.miniStats}><View style={st.miniStat}><Icon name={isSupplier?'box':'school'} size={20}/><Text style={st.miniNumber}>{fmt(total)}<Text style={st.numberUnit}> kg</Text></Text><Text style={st.miniLabel}>previstos neste ciclo</Text></View><View style={st.statDivider}/><View style={st.miniStat}><Icon name="check" size={20}/><Text style={st.miniNumber}>{done}<Text style={st.numberUnit}> de {list.length}</Text></Text><Text style={st.miniLabel}>entregas conferidas</Text></View></View>
- {canAccept&&<View style={st.proposalCard}><View style={st.proposalIcon}><Icon name="calendar" size={24}/></View><Text style={st.proposalTitle}>Um novo plano para confirmar</Text><Text style={st.proposalText}>A coordenação preparou a versão {s.plan.version}. Confira quantidades e destinos antes de aceitar.</Text><Btn label="Conferir proposta" onPress={()=>setSheet('proposal')}/></View>}
- <View style={st.sectionHeading}><Text accessibilityRole="header" style={st.sectionTitle}>Na sua agenda</Text><Pressable accessibilityRole="button" onPress={()=>setTab('deliveries')} style={st.smallButton}><Text style={st.smallLink}>Ver todas</Text><Icon name="arrow" size={15}/></Pressable></View>{list.slice(0,3).map((d:any)=>delivery(d))}
- <View style={st.communityCard}><Icon name="leaf" size={24}/><View style={{flex:1}}><Text style={st.communityTitle}>O alimento aproxima.</Text><Text style={st.communityText}>Você faz parte de uma rede de produtores e escolas que trabalham juntos.</Text></View></View></>}
- {tab==='deliveries'&&<><Text style={st.label}>UM COMPROMISSO DE CADA VEZ</Text><Text accessibilityRole="header" style={st.pageTitle}>Suas entregas</Text><Text style={st.pageSubtitle}>12 de novembro · {list.length} entregas no ciclo</Text>{list.map((d:any)=>delivery(d))}</>}
- {tab==='capacity'&&isSupplier&&<><Text style={st.label}>DA NOSSA TERRA</Text><Text accessibilityRole="header" style={st.pageTitle}>Sua colheita</Text><Text style={st.pageSubtitle}>Confirme o que você consegue entregar. A coordenação acompanha as mesmas quantidades.</Text>{s.capacities.map((c:any)=><View style={st.capacityCard} key={c.product}><View style={st.capacityTop}><View style={[st.foodIcon,{backgroundColor:c.product==='banana'?'#f2efd4':'#f7e4d0'}]}><Icon name={c.product==='banana'?'banana':'carrot'} size={25} color={c.product==='banana'?'#857f37':'#a46e3e'}/></View><Text style={st.capacityTitle}>{s.products.find((p:any)=>p.id===c.product).name}</Text><View style={st.confirmedPill}><Text style={st.confirmedText}>Confirmado</Text></View></View><Text style={st.capacityNumber}>{fmt(c.qty)}<Text style={st.capacityUnit}> kg</Text></Text><Text style={st.capacityDescription}>Disponíveis para o ciclo 24</Text><View style={st.capacityFoot}><Text style={st.capacityLimit}>Limite no cenário: {fmt(c.limit)} kg</Text><Pressable accessibilityRole="button" accessibilityLabel={`Atualizar quantidade de ${c.product}`} onPress={()=>{setSelected(c);setValue(String(c.qty));setSheet('capacity')}} style={st.smallButton}><Text style={st.smallLink}>Atualizar</Text><Icon name="arrow" size={16}/></Pressable></View></View>)}<View style={st.tip}><Icon name="alert" size={20}/><Text style={st.tipText}>Mudou a quantidade? Avise por aqui. A coordenação poderá reorganizar o plano antes da saída.</Text></View></>}
- {tab==='history'&&<><Text style={st.label}>TUDO FICA REGISTRADO</Text><Text accessibilityRole="header" style={st.pageTitle}>Seu histórico</Text><Text style={st.pageSubtitle}>Confirmações, mudanças e recebimentos.</Text>{s.events.map((e:any)=><View style={st.event} key={e.id}><View style={st.eventIcon}><Icon name="check" size={16}/></View><View style={{flex:1}}><Text style={st.eventTitle}>{e.title}</Text><Text style={st.eventText}>{e.detail}</Text><Text style={st.eventTime}>{new Date(e.at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} · {e.actor}</Text></View></View>)}</>}
- {tab==='account'&&<><Text style={st.label}>GENTE QUE FAZ ACONTECER</Text><Text accessibilityRole="header" style={st.pageTitle}>Seu acesso</Text><View style={st.accountCard}><View style={st.accountAvatar}><Icon name={isSupplier?'leaf':'school'} size={34}/></View><Text style={st.accountName}>{snap.actor.name}</Text><Text style={st.accountRole}>{isSupplier?'Produtor de agricultura familiar':'Responsável pelo recebimento'}</Text><View style={st.demoPill}><Text style={st.demoPillText}>Dados fictícios · Projeto acadêmico</Text></View></View>{session.invites&&<><Text style={st.sectionTitle}>Explorar a integração</Text><Text style={st.pageSubtitle}>Troque de perfil dentro do mesmo cenário ou abra a coordenação para ver o efeito das ações.</Text>{session.invites.filter((x:any)=>x.role!=='coordinator').map((i:any)=><Pressable key={i.id} style={st.accessRow} accessibilityRole="button" onPress={()=>{setSession({...session,token:i.token});setSnap(null);setTab('home')}}><Icon name={i.role==='supplier'?'leaf':'school'} size={22}/><Text style={st.accessName}>{i.name}</Text><Icon name="arrow" size={17}/></Pressable>)}<Btn label="Abrir coordenação na web" secondary icon="link" onPress={()=>Linking.openURL(ownUrl(session.invites!.find(i=>i.role==='coordinator')))}/></>}
- <Text style={[st.sectionTitle,{marginTop:25}]}>Outro convite</Text><TextInput accessibilityLabel="Novo convite de acesso" value={inviteInput} onChangeText={setInviteInput} placeholder="Cole o convite completo" autoCapitalize="none" style={st.input}/><Btn label="Entrar com outro convite" onPress={openInvite} secondary/>
- <Pressable accessibilityRole="button" onPress={async()=>{await AsyncStorage.removeItem('abastece-mobile-session');await AsyncStorage.removeItem('abastece-last-snapshot');setSession(null);setSnap(null);setTab('home')}} style={st.logout}><Text style={st.smallLink}>Sair deste acesso</Text></Pressable><Text style={st.disclaimer}>O aplicativo coordena compromissos e registra conferências. As decisões de compra e de segurança alimentar pertencem às pessoas responsáveis.</Text></>}
- </Animated.View><Text style={st.footer}>FEITO DE CONEXÕES. CULTIVADO EM COMUNIDADE.</Text></ScrollView>
- <View style={st.bottomNav}>{(isSupplier?[['home','Início','home'],['capacity','Colheita','leaf'],['deliveries','Entregas','truck'],['history','Histórico','clock']]:[['home','Início','home'],['deliveries','Entregas','box'],['history','Histórico','clock'],['account','Acesso','user']]).map(([id,label,icon])=><Pressable key={id} accessibilityRole="tab" accessibilityState={{selected:tab===id}} accessibilityLabel={label} onPress={()=>{setTab(id);setError('')}} style={st.navItem}><View style={[st.navIcon,tab===id&&st.navIconActive]}><Icon name={icon} size={21} color={tab===id?C.green:'#829273'}/></View><Text style={[st.navText,tab===id&&st.navTextActive]}>{label}</Text></Pressable>)}</View>
- {toast&&<View style={st.toast} accessibilityLiveRegion="polite"><Icon name="check" size={19} color={C.lime}/><Text style={st.toastText}>{toast}</Text><Pressable accessibilityRole="button" accessibilityLabel="Fechar confirmação" onPress={()=>setToast('')} style={{padding:6}}><Icon name="close" size={17} color={C.lime}/></Pressable></View>}
- <Modal visible={!!sheet} transparent animationType={reduce?'none':'slide'} onRequestClose={close}><KeyboardAvoidingView behavior={Platform.OS==='ios'?'padding':undefined} style={st.modalBackdrop}><Pressable style={StyleSheet.absoluteFill} onPress={close} accessibilityLabel="Fechar detalhes"/><View style={[st.sheet,{maxWidth:width>600?500:undefined}]} accessibilityViewIsModal><View style={st.sheetHandle}/><View style={st.sheetTop}><Text accessibilityRole="header" style={st.sheetTitle}>{sheet==='capacity'?'Atualizar sua colheita':sheet==='proposal'?'Confira os compromissos':'Detalhes da entrega'}</Text><Pressable accessibilityRole="button" accessibilityLabel="Fechar janela" onPress={close} style={st.closeButton}><Icon name="close" size={21}/></Pressable></View><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingBottom:20}}>
- {error?<Text accessibilityRole="alert" style={st.error}>{error}</Text>:null}
- {sheet==='capacity'&&selected&&<><Text style={st.sheetIntro}>{s.products.find((p:any)=>p.id===selected.product).name} · ciclo 24</Text><Text style={st.fieldLabel}>Quanto você consegue entregar em kg?</Text><TextInput accessibilityLabel="Quantidade disponível em quilogramas" autoFocus keyboardType="decimal-pad" value={value} onChangeText={setValue} style={st.bigInput}/><Text style={st.inputHelp}>Limite operacional do cenário: {fmt(selected.limit)} kg. A alteração será enviada para a coordenação.</Text><Btn label={busy?'Confirmando…':'Confirmar quantidade'} disabled={busy||!online} onPress={()=>send('capacity',{product:selected.product,qty:value})}/></>}
- {sheet==='proposal'&&<><Text style={st.sheetIntro}>Versão {s.plan.version} · confira alimento, escola e quantidade antes de confirmar.</Text>{list.map((d:any)=><View key={d.id} style={st.proposalLine}><Icon name={d.product==='banana'?'banana':'carrot'} size={22}/><View style={{flex:1}}><Text style={st.deliveryProduct}>{s.products.find((p:any)=>p.id===d.product).name}</Text><Text style={st.deliveryMeta}>{s.schools.find((x:any)=>x.id===d.school).short}</Text></View><Text style={st.proposalQty}>{fmt(d.qty)} kg</Text></View>)}<Text style={st.inputHelp}>Ao confirmar, você registra que pode atender estes compromissos. Uma mudança posterior poderá exigir nova confirmação.</Text><Btn label={busy?'Confirmando…':'Confirmar proposta'} disabled={busy||!online} onPress={()=>send('accept',{version:s.plan.version})}/></>}
- {sheet==='delivery'&&selected&&<><View style={st.deliveryDetailHero}><Icon name={selected.product==='banana'?'banana':'carrot'} size={35}/><View><Text style={st.deliveryDetailProduct}>{s.products.find((p:any)=>p.id===selected.product).name}</Text><Text style={st.deliveryMeta}>{fmt(selected.qty)} kg previstos</Text></View></View><View style={st.detailRow}><Text style={st.detailLabel}>{isSupplier?'Destino':'Origem'}</Text><Text style={st.detailValue}>{isSupplier?s.schools.find((x:any)=>x.id===selected.school).short:s.suppliers.find((x:any)=>x.id===selected.supplier).short}</Text></View><View style={st.detailRow}><Text style={st.detailLabel}>Entrega</Text><Text style={st.detailValue}>12 de novembro · {selected.time}</Text></View><View style={st.detailRow}><Text style={st.detailLabel}>Situação</Text><Text style={st.detailValue}>{{scheduled:'Agendada',dispatched:'A caminho',received:'Conferida'}[selected.status as 'scheduled']}</Text></View>
- {isSupplier&&selected.status==='scheduled'&&<><Text style={st.inputHelp}>Confirme a saída quando a mercadoria estiver pronta para seguir à escola. Esta ação precisa de conexão.</Text><Btn label={busy?'Registrando…':'Confirmar saída da entrega'} onPress={()=>send('dispatch',{id:selected.id})} disabled={busy||!online} icon="truck"/></>}
- {!isSupplier&&selected.status==='dispatched'&&<><Text style={st.fieldLabel}>Quantidade recebida em kg</Text><TextInput accessibilityLabel="Quantidade recebida em quilogramas" keyboardType="decimal-pad" value={value} onChangeText={setValue} style={st.input}/><Text style={st.fieldLabel}>Quantidade rejeitada em kg</Text><TextInput accessibilityLabel="Quantidade rejeitada em quilogramas" keyboardType="decimal-pad" value={reject} onChangeText={setReject} style={st.input}/><Text style={st.fieldLabel}>Motivo ou observação</Text><TextInput accessibilityLabel="Motivo da rejeição ou observação" multiline value={note} onChangeText={setNote} placeholder="Descreva a conferência" style={[st.input,{minHeight:75,textAlignVertical:'top'}]}/><Text style={st.inputHelp}>A coordenação verá o que foi aceito. Sem conexão, a anotação ficará pendente neste aparelho.</Text><Btn label={busy?'Registrando…':online?'Confirmar recebimento':'Salvar conferência pendente'} disabled={busy} onPress={()=>send('receive',{id:selected.id,delivered:value,rejected:reject,note})} icon="check"/></>}
- {selected.status==='received'&&<View style={st.receiptCard}><Icon name="check" size={24}/><Text style={st.receiptTitle}>Conferência concluída</Text><Text style={st.receiptText}>{fmt(selected.receipt.accepted)} kg aceitos · {fmt(selected.receipt.rejected)} kg rejeitados</Text>{selected.receipt.note?<Text style={st.receiptText}>{selected.receipt.note}</Text>:null}</View>}
- {!isSupplier&&selected.status==='scheduled'&&<Text style={st.inputHelp}>Aguarde o produtor registrar a saída antes de conferir a mercadoria. A agenda será atualizada automaticamente.</Text>}
- </>}
- </ScrollView></View></KeyboardAvoidingView></Modal>
- </View></View>;
- function delivery(d:any){return <Pressable key={d.id} accessibilityRole="button" accessibilityLabel={`${s.products.find((p:any)=>p.id===d.product).name}, ${fmt(d.qty)} quilogramas, ${isSupplier?s.schools.find((x:any)=>x.id===d.school).short:s.suppliers.find((x:any)=>x.id===d.supplier).short}, ${d.status==='scheduled'?'agendada':d.status==='dispatched'?'a caminho':'conferida'}. Ver detalhes.`} onPress={()=>openDelivery(d)} style={({pressed})=>[st.deliveryCard,pressed&&{backgroundColor:'#f0f4e5'}]}><View style={st.deliveryTop}><View style={[st.foodIcon,{backgroundColor:d.product==='banana'?'#f1efd7':'#f7e9d9'}]}><Icon name={d.product==='banana'?'banana':'carrot'} size={22} color={d.product==='banana'?'#8b853d':'#aa7746'}/></View><View style={{flex:1}}><Text style={st.deliveryProduct}>{s.products.find((p:any)=>p.id===d.product).name}</Text><Text style={st.deliveryMeta}>{isSupplier?s.schools.find((x:any)=>x.id===d.school).short:s.suppliers.find((x:any)=>x.id===d.supplier).short}</Text></View><Text style={st.deliveryQty}>{fmt(d.qty)}<Text style={st.qtyUnit}> kg</Text></Text></View><View style={st.deliveryBottom}><View style={{flexDirection:'row',alignItems:'center',gap:5}}><Icon name="clock" size={13} color="#7e8d70"/><Text style={st.deliveryTime}>12 nov · {d.time}</Text></View><View style={[st.status,d.status==='dispatched'&&{backgroundColor:'#e5edf2'},d.status==='received'&&{backgroundColor:'#e7efda'}]}><View style={[st.statusDot,d.status==='received'&&{backgroundColor:'#6a8e48'},d.status==='dispatched'&&{backgroundColor:'#6e91a4'}]}/><Text style={st.statusText}>{{scheduled:'Agendada',dispatched:'A caminho',received:'Conferida'}[d.status as 'scheduled']}</Text></View></View></Pressable>}
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  TextInput,
+  Modal,
+  Animated,
+  StyleSheet,
+  Platform,
+  AppState,
+  AccessibilityInfo,
+  Linking,
+  Share,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  useWindowDimensions,
+} from "react-native";
+import { StatusBar } from "expo-status-bar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Svg, { Path, Circle, Rect, Line, G } from "react-native-svg";
+type Session = { room: string; token: string; invites?: any[]; base: string };
+const C = {
+  green: "#244734",
+  text: "#29432f",
+  muted: "#52683f",
+  bg: "#f5f6ee",
+  lime: "#d8e9ac",
+  line: "#e0e6d5",
+  amber: "#8c6928",
+};
+const fmt = (n: number) =>
+  new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 3 }).format(n);
+const op = () =>
+  Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+const PUBLIC_API = "https://abastece-escola.toughazure1.chatgpt.site";
+function defaultBase() {
+  if (Platform.OS === "web") {
+    const l = (globalThis as any).location;
+    return l.hostname === "localhost" || l.hostname === "127.0.0.1"
+      ? `http://${l.hostname}:4181`
+      : l.origin;
+  }
+  return process.env.EXPO_PUBLIC_API_URL || PUBLIC_API;
 }
-const serif=Platform.select({ios:'Georgia',android:'serif',web:'Georgia'});
-const st=StyleSheet.create({
- screen:{flex:1,backgroundColor:C.bg},center:{flex:1,justifyContent:'center',alignItems:'center',backgroundColor:C.bg},mobileContainer:{flex:1,width:'100%',maxWidth:560,alignSelf:'center',backgroundColor:C.bg},header:{paddingTop:Platform.OS==='web'?25:57,paddingHorizontal:25,paddingBottom:18,flexDirection:'row',alignItems:'center',justifyContent:'space-between'},logo:{flexDirection:'row',alignItems:'center',gap:7},logoName:{fontSize:24,fontWeight:'600',letterSpacing:-1.2,color:C.green},logoSub:{fontSize:8,letterSpacing:4.6,color:C.green,marginTop:1,fontWeight:'500'},profileButton:{width:41,height:41,borderRadius:30,backgroundColor:'#e2e8cf',alignItems:'center',justifyContent:'center'},profileText:{fontSize:12,fontWeight:'600',color:'#587247'},connectionBar:{marginHorizontal:25,flexDirection:'row',alignItems:'center',gap:5,paddingBottom:14,borderBottomWidth:1,borderColor:C.line},connectionDot:{width:5,height:5,borderRadius:5,backgroundColor:'#799f56'},connectionText:{fontSize:10,color:'#748266',flex:1},cycleSmall:{fontSize:8,letterSpacing:1.1,color:'#7b896e'},content:{paddingHorizontal:25,paddingTop:22,paddingBottom:20},greeting:{fontSize:15,color:'#52664a',fontWeight:'500',marginBottom:19},hero:{height:239,borderRadius:15,backgroundColor:'#e9eed8',overflow:'hidden',borderWidth:1,borderColor:'#e0e7cf'},heroText:{position:'absolute',left:22,top:22,zIndex:1},label:{fontSize:9,letterSpacing:1.8,fontWeight:'600',color:'#687f50',marginBottom:10},heroTitle:{fontFamily:serif,fontSize:35,lineHeight:37,color:C.green,letterSpacing:-1.2},heroSubtitle:{fontSize:11,lineHeight:17,color:'#60784b',marginTop:12},garden:{position:'absolute',bottom:-12,right:-28,width:'100%',maxWidth:400},miniStats:{flexDirection:'row',borderRadius:12,backgroundColor:'white',borderWidth:1,borderColor:C.line,paddingVertical:19,marginTop:17,marginBottom:26},miniStat:{flex:1,paddingHorizontal:21},miniNumber:{fontSize:29,color:C.green,letterSpacing:-1,marginTop:9,fontWeight:'500'},numberUnit:{fontSize:13,color:'#788b66',fontWeight:'400',letterSpacing:0},miniLabel:{fontSize:10,color:'#718464',marginTop:5},statDivider:{width:1,backgroundColor:C.line,marginVertical:4},sectionHeading:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginBottom:13},sectionTitle:{fontSize:19,color:C.green,fontWeight:'500',letterSpacing:-.6},smallButton:{minHeight:44,flexDirection:'row',alignItems:'center',gap:5},smallLink:{fontSize:11,color:'#536e40',fontWeight:'500'},deliveryCard:{backgroundColor:'white',borderWidth:1,borderColor:C.line,borderRadius:11,padding:16,marginBottom:12},deliveryTop:{flexDirection:'row',gap:11,alignItems:'center'},foodIcon:{width:40,height:40,borderRadius:9,alignItems:'center',justifyContent:'center'},deliveryProduct:{fontSize:14,fontWeight:'500',color:C.green},deliveryMeta:{fontSize:10,color:'#718466',marginTop:5},deliveryQty:{fontSize:22,color:C.green,fontWeight:'500',letterSpacing:-.7},qtyUnit:{fontSize:11,fontWeight:'400',color:'#7c8c6d',letterSpacing:0},deliveryBottom:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',borderTopWidth:1,borderTopColor:'#edf0e4',paddingTop:12,marginTop:14},deliveryTime:{fontSize:10,color:'#6b7f5c'},status:{flexDirection:'row',alignItems:'center',gap:5,paddingHorizontal:8,paddingVertical:5,backgroundColor:'#f4efdf',borderRadius:5},statusDot:{width:4,height:4,borderRadius:4,backgroundColor:'#a08343'},statusText:{fontSize:9,fontWeight:'500',color:'#65774f'},communityCard:{backgroundColor:'#edf1e2',borderRadius:10,padding:18,flexDirection:'row',gap:12,alignItems:'center',marginTop:14},communityTitle:{fontSize:14,color:'#54713f',fontWeight:'500'},communityText:{fontSize:10,lineHeight:16,color:'#6c7f59',marginTop:5},bottomNav:{backgroundColor:'#fff',borderTopWidth:1,borderColor:C.line,flexDirection:'row',paddingTop:10,paddingBottom:Platform.OS==='web'?12:28,paddingHorizontal:10},navItem:{flex:1,minHeight:54,alignItems:'center',justifyContent:'center',gap:4},navIcon:{width:48,height:29,alignItems:'center',justifyContent:'center',borderRadius:8},navIconActive:{backgroundColor:'#e9f0da'},navText:{fontSize:9,color:'#758767'},navTextActive:{color:C.green,fontWeight:'600'},footer:{fontSize:7,letterSpacing:1.1,textAlign:'center',color:'#7d8c6f',marginVertical:26,lineHeight:15},pageTitle:{fontFamily:serif,fontSize:38,color:C.green,letterSpacing:-1.1,marginBottom:9},pageSubtitle:{fontSize:12,lineHeight:20,color:C.muted,marginBottom:22},capacityCard:{backgroundColor:'white',borderWidth:1,borderColor:C.line,padding:20,borderRadius:12,marginBottom:17},capacityTop:{flexDirection:'row',gap:10,alignItems:'center'},capacityTitle:{fontSize:17,fontWeight:'500',color:C.green,flex:1},confirmedPill:{backgroundColor:'#edf3e2',padding:6,borderRadius:4},confirmedText:{fontSize:8,color:'#5f7e43'},capacityNumber:{fontSize:47,fontWeight:'400',color:C.green,letterSpacing:-2,marginTop:23},capacityUnit:{fontSize:18,fontWeight:'400',letterSpacing:0,color:'#7c9068'},capacityDescription:{fontSize:11,color:'#758869',marginTop:4},capacityFoot:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',borderTopWidth:1,borderColor:C.line,marginTop:20,paddingTop:6},capacityLimit:{fontSize:9,color:'#718564'},tip:{flexDirection:'row',alignItems:'flex-start',gap:10,padding:17,backgroundColor:'#eaf0dd',borderRadius:10},tipText:{flex:1,fontSize:11,lineHeight:18,color:'#637950'},proposalCard:{backgroundColor:'#254733',borderRadius:12,padding:21,marginBottom:25},proposalIcon:{width:38,height:38,borderRadius:10,backgroundColor:C.lime,alignItems:'center',justifyContent:'center',marginBottom:16},proposalTitle:{fontSize:19,lineHeight:24,color:'#f5f8ec',fontWeight:'500',letterSpacing:-.6},proposalText:{fontSize:11,lineHeight:18,color:'#c1d3b3',marginTop:9,marginBottom:17},button:{minHeight:48,borderRadius:7,paddingHorizontal:16,paddingVertical:13,backgroundColor:C.green,flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:10},secondary:{backgroundColor:'#fff',borderWidth:1,borderColor:'#dbe3ce'},buttonText:{color:'#fff',fontWeight:'500',fontSize:12},proposalLine:{flexDirection:'row',gap:12,alignItems:'center',paddingVertical:15,borderBottomWidth:1,borderColor:C.line},proposalQty:{fontSize:18,color:C.green},event:{flexDirection:'row',gap:12,paddingVertical:16,borderBottomWidth:1,borderColor:C.line},eventIcon:{width:30,height:30,borderRadius:20,backgroundColor:'#e5edda',alignItems:'center',justifyContent:'center'},eventTitle:{fontSize:13,fontWeight:'500',color:C.green},eventText:{fontSize:11,lineHeight:18,color:C.muted,marginTop:6},eventTime:{fontSize:9,color:'#768965',marginTop:9},accountCard:{alignItems:'center',padding:25,backgroundColor:'#eef2e3',borderWidth:1,borderColor:C.line,borderRadius:13,marginBottom:28},accountAvatar:{width:68,height:68,backgroundColor:'#dbe6bf',borderRadius:40,alignItems:'center',justifyContent:'center',marginBottom:16},accountName:{fontFamily:serif,fontSize:29,color:C.green,textAlign:'center'},accountRole:{fontSize:11,color:C.muted,textAlign:'center',marginTop:7},demoPill:{backgroundColor:'#e1eacb',borderRadius:20,paddingHorizontal:10,paddingVertical:7,marginTop:19},demoPillText:{fontSize:8,color:'#607d41'},accessRow:{flexDirection:'row',gap:12,alignItems:'center',paddingVertical:16,borderBottomWidth:1,borderColor:C.line},accessName:{flex:1,fontSize:12,color:C.green},input:{borderWidth:1,borderColor:'#d8e1ca',backgroundColor:'white',borderRadius:7,minHeight:49,padding:13,fontSize:13,color:C.green,marginVertical:10},fieldLabel:{fontSize:12,fontWeight:'500',color:C.green,marginTop:15},bigInput:{borderWidth:1,borderColor:'#c7d5b3',borderRadius:9,padding:18,fontSize:36,color:C.green,marginVertical:15,backgroundColor:'white'},inputHelp:{fontSize:11,lineHeight:19,color:C.muted,marginBottom:23,marginTop:10},logout:{alignItems:'center',padding:25},disclaimer:{fontSize:10,lineHeight:17,color:'#6c7f5a',marginTop:10},modalBackdrop:{flex:1,justifyContent:'flex-end',backgroundColor:'#172e23a6',alignItems:'center'},sheet:{width:'100%',maxHeight:'90%',backgroundColor:'#fafbf5',borderTopLeftRadius:24,borderTopRightRadius:24,paddingHorizontal:25,paddingTop:10,paddingBottom:Platform.OS==='web'?15:25},sheetHandle:{height:4,width:35,borderRadius:4,backgroundColor:'#d2dbc6',alignSelf:'center',marginBottom:14},sheetTop:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:10,marginBottom:12},sheetTitle:{fontSize:21,fontWeight:'500',color:C.green,flex:1,letterSpacing:-.6},closeButton:{width:44,height:44,alignItems:'center',justifyContent:'center'},sheetIntro:{fontSize:12,lineHeight:20,color:C.muted,marginBottom:12},deliveryDetailHero:{flexDirection:'row',alignItems:'center',gap:16,padding:20,backgroundColor:'#ecf0df',borderRadius:11,marginBottom:15},deliveryDetailProduct:{fontSize:25,fontFamily:serif,color:C.green},detailRow:{flexDirection:'row',justifyContent:'space-between',gap:20,paddingVertical:13,borderBottomWidth:1,borderColor:C.line},detailLabel:{fontSize:11,color:C.muted},detailValue:{fontSize:11,color:C.green,textAlign:'right',maxWidth:'70%'},receiptCard:{marginTop:20,padding:20,borderRadius:10,backgroundColor:'#eaf2dc',alignItems:'center'},receiptTitle:{fontSize:17,fontWeight:'500',color:C.green,marginTop:10},receiptText:{fontSize:11,color:C.muted,textAlign:'center',marginTop:8,lineHeight:18},toast:{position:'absolute',bottom:Platform.OS==='web'?95:117,left:16,right:16,backgroundColor:'#244734',padding:15,borderRadius:10,flexDirection:'row',gap:8,alignItems:'center',shadowColor:'#17361c',shadowOpacity:.15,shadowRadius:12,elevation:4},toastText:{flex:1,color:'white',fontSize:11,lineHeight:17},error:{color:'#975535',fontSize:12,lineHeight:19},errorBox:{padding:15,backgroundColor:'#f8e8dd',borderRadius:8,marginBottom:16,flexDirection:'row',gap:8},pendingBox:{padding:18,backgroundColor:'#f4edd8',borderWidth:1,borderColor:'#e7d9b0',borderRadius:11,marginBottom:20},pendingTitle:{fontSize:13,color:C.amber,fontWeight:'500',flex:1},pendingText:{fontSize:11,lineHeight:18,color:'#816a38',marginVertical:11},welcome:{paddingHorizontal:28,paddingTop:Platform.OS==='web'?38:75,paddingBottom:25,maxWidth:520,width:'100%',alignSelf:'center'},welcomeArt:{marginTop:30,backgroundColor:'#edf0dc',borderRadius:15,overflow:'hidden'},welcomeTitle:{fontSize:36,fontFamily:serif,lineHeight:40,color:C.green,letterSpacing:-1.1,marginTop:28},welcomeText:{fontSize:13,lineHeight:22,color:C.muted,marginTop:15,marginBottom:24},welcomeBox:{backgroundColor:'#fff',borderRadius:11,borderWidth:1,borderColor:C.line,padding:20},welcomeBoxTitle:{fontSize:17,color:C.green,fontWeight:'500'},demoButton:{flexDirection:'row',justifyContent:'center',alignItems:'center',gap:8,paddingVertical:22,minHeight:48},demoText:{fontSize:11,color:C.green,fontWeight:'500'},welcomeFooter:{fontSize:7,color:'#70825c',letterSpacing:1.2,textAlign:'center',marginTop:20},muted:{fontSize:11,color:C.muted,textAlign:'center',marginTop:10}
+function Icon({
+  name,
+  size = 22,
+  color = C.green,
+}: {
+  name: string;
+  size?: number;
+  color?: string;
+}) {
+  const paths: Record<string, string> = {
+    leaf: "M12 22V10M12 15C2 15 2 5 2 5s10-1 10 10M12 10C21 10 22 1 22 1s-10 0-10 9",
+    home: "m3 10 9-7 9 7v11h-6v-8H9v8H3Z",
+    box: "m3 7 9-4 9 4-9 4Zm0 0v11l9 4 9-4V7M12 11v11",
+    truck:
+      "M1 5h13v12H1ZM14 9h5l4 5v3h-9M5 17a2 2 0 1 0 .1 0M18 17a2 2 0 1 0 .1 0",
+    check: "m5 12 4 4L20 5",
+    arrow: "M4 12h16m-6-6 6 6-6 6",
+    back: "M20 12H4m6-6-6 6 6 6",
+    clock: "M12 7v6l4 2M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0",
+    calendar: "M4 5h16v16H4ZM8 2v6m8-6v6M4 10h16",
+    user: "M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0M4 22v-3a8 8 0 0 1 16 0v3",
+    school: "m2 9 10-7 10 7M4 8v14h16V8M10 22v-7h4v7M8 10h1m6 0h1M12 2v7",
+    carrot: "m7 7 10 3-14 12ZM14 7l3-5m0 8 5-2m-8-1 6-5",
+    banana: "M20 3C18 14 10 20 3 15c1 9 18 10 19-10Zm-1 0 2-1",
+    alert: "m12 2 11 20H1ZM12 9v5m0 3v1",
+    close: "m5 5 14 14M19 5 5 19",
+    link: "m10 14 4-4M8 16l-2 2a4 4 0 0 1-5-5l5-5a4 4 0 0 1 5 0m2 3a4 4 0 0 0 5 0l5-5a4 4 0 0 0-5-5l-2 2",
+    refresh: "M20 7a9 9 0 1 0 0 10M20 2v6h-6",
+    wifi: "M2 8a16 16 0 0 1 20 0M5 12a11 11 0 0 1 14 0M8 16a6 6 0 0 1 8 0m-4 4h.01",
+    copy: "M8 8h14v14H8ZM3 16H1V1h15v2",
+  };
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      accessibilityElementsHidden
+    >
+      <Path d={paths[name] || paths.leaf} />
+    </Svg>
+  );
+}
+function Garden() {
+  return (
+    <Svg
+      width="100%"
+      height={160}
+      viewBox="0 0 400 160"
+      accessibilityElementsHidden
+    >
+      <Circle cx="318" cy="41" r="30" fill="#D9E8A8" />
+      <Path d="M-30 140Q90 20 260 111T440 77V200H-30Z" fill="#A9BD7D" />
+      <Path d="M-30 175Q130 65 295 135T450 94V200H-30Z" fill="#6C8A51" />
+      <Path
+        d="M150 160q100-48 240-15"
+        stroke="#e1e7c5"
+        strokeWidth={18}
+        fill="none"
+      />
+      <G x={267} y={63}>
+        <Path d="M0 55V13L23-3l24 16v42Z" fill="#f8f4e4" />
+        <Path
+          d="m-5 14 28-21 29 21"
+          stroke="#244734"
+          strokeWidth={3}
+          fill="none"
+        />
+        <Path d="M18 55V32h11v23" fill="#244734" />
+        <Rect x={6} y={23} width={7} height={9} fill="#91aa71" />
+        <Rect x={34} y={23} width={7} height={9} fill="#91aa71" />
+      </G>
+      <G x={95} y={57}>
+        <Path
+          d="M0 66V15M0 42C-23 42-21 19-21 19S0 19 0 42M0 26C19 26 21 5 21 5S0 5 0 26"
+          fill="#244734"
+          stroke="#244734"
+          strokeWidth={1.5}
+        />
+      </G>
+      <G x={180} y={116}>
+        <Path
+          d="M0 0h31v20H0Zm31 7h11l9 9v4H31Z"
+          fill="#eee5ca"
+          stroke="#244734"
+          strokeWidth={1.4}
+        />
+        <Circle cx={8} cy={21} r={4} fill="#244734" />
+        <Circle cx={41} cy={21} r={4} fill="#244734" />
+      </G>
+    </Svg>
+  );
+}
+function Btn({
+  label,
+  onPress,
+  secondary = false,
+  disabled = false,
+  icon = "arrow",
+}: {
+  label: string;
+  onPress: () => void;
+  secondary?: boolean;
+  disabled?: boolean;
+  icon?: string;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        st.button,
+        secondary && st.secondary,
+        pressed && { opacity: 0.8, transform: [{ scale: 0.99 }] },
+        disabled && { opacity: 0.45 },
+      ]}
+    >
+      <Text style={[st.buttonText, secondary && { color: C.green }]}>
+        {label}
+      </Text>
+      <Icon name={icon} size={18} color={secondary ? C.green : "#fff"} />
+    </Pressable>
+  );
+}
+export default function App() {
+  const [session, setSession] = useState<Session | null>(null),
+    [snap, setSnap] = useState<any>(null),
+    [tab, setTab] = useState("home"),
+    [error, setError] = useState(""),
+    [toast, setToast] = useState(""),
+    [busy, setBusy] = useState(false),
+    [online, setOnline] = useState(true),
+    [sheet, setSheet] = useState(""),
+    [selected, setSelected] = useState<any>(null),
+    [value, setValue] = useState(""),
+    [reject, setReject] = useState("0"),
+    [note, setNote] = useState(""),
+    [inviteInput, setInviteInput] = useState(""),
+    [queue, setQueue] = useState<any>(null),
+    [reduce, setReduce] = useState(false),
+    [ready, setReady] = useState(false);
+  const fade = useRef(new Animated.Value(1)).current;
+  const current = useRef<any>(null);
+  current.current = { snap, session };
+  const { width } = useWindowDimensions();
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then(setReduce);
+    const listener = AccessibilityInfo.addEventListener(
+      "reduceMotionChanged",
+      setReduce,
+    );
+    const init = async () => {
+      try {
+        const l = (globalThis as any).location;
+        let loaded = null;
+        if (Platform.OS === "web" && l?.hash.includes("access=")) {
+          const hash = new URLSearchParams(l.hash.slice(1));
+          loaded = {
+            base: defaultBase(),
+            room: new URLSearchParams(l.search).get("room") || "",
+            token: hash.get("access"),
+          };
+          (globalThis as any).history.replaceState({}, "", l.pathname);
+        } else {
+          loaded = JSON.parse(
+            (await AsyncStorage.getItem("abastece-mobile-session")) || "null",
+          );
+        }
+        if (loaded) setSession(loaded);
+        const q = JSON.parse(
+          (await AsyncStorage.getItem("abastece-pending-receipt")) || "null",
+        );
+        setQueue(q);
+      } catch {
+        setError(
+          "Não foi possível recuperar o acesso salvo. Cole seu convite novamente.",
+        );
+      }
+      setReady(true);
+    };
+    init();
+    return () => listener.remove();
+  }, []);
+  useEffect(() => {
+    if (!session) return;
+    AsyncStorage.setItem("abastece-mobile-session", JSON.stringify(session));
+    refresh(session);
+    const timer = setInterval(() => {
+      if (AppState.currentState === "active") refresh(session);
+    }, 1800);
+    const listener = AppState.addEventListener("change", (state) => {
+      if (state === "active") refresh(session);
+    });
+    return () => {
+      clearInterval(timer);
+      listener.remove();
+    };
+  }, [session]);
+  useEffect(() => {
+    if (reduce) {
+      fade.setValue(1);
+      return;
+    }
+    fade.setValue(0);
+    Animated.timing(fade, {
+      toValue: 1,
+      duration: 240,
+      useNativeDriver: true,
+    }).start();
+  }, [tab, reduce]);
+  useEffect(() => {
+    if (!toast) return;
+    AccessibilityInfo.announceForAccessibility(toast);
+    const t = setTimeout(() => setToast(""), 6000);
+    return () => clearTimeout(t);
+  }, [toast]);
+  async function refresh(se = session) {
+    if (!se) return;
+    try {
+      const r = await fetch(`${se.base}/api/snapshot?room=${se.room}`, {
+        headers: { authorization: `Bearer ${se.token}` },
+      });
+      const b = await r.json();
+      if (!r.ok) throw Object.assign(Error(b.error), { status: r.status });
+      setSnap(b);
+      setOnline(true);
+      await AsyncStorage.setItem(
+        "abastece-last-snapshot",
+        JSON.stringify({
+          room: se.room,
+          token: se.token,
+          actor: b.actor,
+          state: b.state,
+          revision: b.revision,
+        }),
+      );
+    } catch (e: any) {
+      setOnline(false);
+      if (!current.current.snap) {
+        const cached = JSON.parse(
+          (await AsyncStorage.getItem("abastece-last-snapshot")) || "null",
+        );
+        if (cached?.room === se.room && cached?.token === se.token)
+          setSnap(cached);
+        else setError(e.message || "Sem conexão. Tente novamente.");
+      }
+    }
+  }
+  async function createDemo() {
+    setBusy(true);
+    try {
+      const base = defaultBase();
+      const r = await fetch(base + "/api/create", { method: "POST" });
+      if (!r.ok) throw Error("Não foi possível criar a demonstração.");
+      const b = await r.json();
+      const actor = b.invites.find((i: any) => i.id === "p1");
+      setSession({
+        base,
+        room: b.room,
+        token: actor.token,
+        invites: b.invites,
+      });
+      setError("");
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function openInvite() {
+    try {
+      const url = new URL(inviteInput.trim());
+      const token = new URLSearchParams(url.hash.slice(1)).get("access");
+      const room = url.searchParams.get("room");
+      if (!token || !room)
+        throw Error("Cole o convite completo compartilhado pela coordenação.");
+      if (
+        url.protocol !== "https:" &&
+        !(
+          url.protocol === "http:" &&
+          /^(localhost|127\.0\.0\.1|192\.168\.)/.test(url.hostname)
+        )
+      )
+        throw Error("O convite precisa usar uma conexão segura.");
+      setSnap(null);
+      setSession({ base: url.origin, room, token });
+      setSheet("");
+      setError("");
+    } catch (e: any) {
+      setError(e.message || "Convite inválido.");
+    }
+  }
+  async function send(type: string, payload: any = {}, fromQueue?: any) {
+    if (!session || !snap) return;
+    setBusy(true);
+    setError("");
+    const command = fromQueue?.command || {
+      room: session.room,
+      revision: snap.revision,
+      operationId: op(),
+      type,
+      payload,
+    };
+    try {
+      const r = await fetch(session.base + "/api/command", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${session.token}`,
+        },
+        body: JSON.stringify(command),
+      });
+      const b = await r.json();
+      if (!r.ok) throw Object.assign(Error(b.error), { status: r.status });
+      setSnap(b);
+      setOnline(true);
+      setSheet("");
+      if (type === "receive") {
+        setQueue(null);
+        await AsyncStorage.removeItem("abastece-pending-receipt");
+      }
+      setToast(
+        type === "capacity"
+          ? "Quantidade confirmada. A coordenação já pode acompanhar."
+          : type === "accept"
+            ? "Proposta confirmada. Seu compromisso está registrado."
+            : type === "dispatch"
+              ? "Saída registrada. A escola já foi avisada."
+              : "Recebimento sincronizado com a coordenação.",
+      );
+    } catch (e: any) {
+      if (!e.status && type === "receive" && !fromQueue) {
+        const q = { room: session.room, token: session.token, command };
+        setQueue(q);
+        await AsyncStorage.setItem(
+          "abastece-pending-receipt",
+          JSON.stringify(q),
+        );
+        setSheet("");
+        setToast("Conferência salva neste aparelho. Pendente de envio.");
+        setOnline(false);
+      } else {
+        setError(e.message || "Não foi possível enviar.");
+        if (e.status === 409) refresh();
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function replay() {
+    if (!queue || !session) return;
+    if (queue.room !== session.room || queue.token !== session.token) {
+      setError(
+        "Há uma anotação pendente de outro acesso. Entre pelo convite original para revisar.",
+      );
+      return;
+    }
+    await send("receive", {}, queue);
+  }
+  async function discardPending() {
+    await AsyncStorage.removeItem("abastece-pending-receipt");
+    setQueue(null);
+    setError("");
+    setToast(
+      "Anotação local descartada. O registro do servidor foi preservado.",
+    );
+  }
+  const close = () => {
+    setSheet("");
+    setError("");
+  };
+  const heroTitle =
+    snap?.actor.role === "supplier"
+      ? "Quem cultiva,\nconecta."
+      : "Receber bem\né alimentar.";
+  const isSupplier = snap?.actor.role === "supplier";
+  const s = snap?.state;
+  const supplier = s?.suppliers.find((p: any) => p.id === snap.actor.id);
+  const school = s?.schools.find((p: any) => p.id === snap.actor.id);
+  const list = s?.deliveries || [];
+  const total = list.reduce((n: number, d: any) => n + d.qty, 0),
+    done = list.filter((d: any) => d.status === "received").length;
+  const canAccept =
+    isSupplier &&
+    s?.plan.status === "draft" &&
+    s?.plan.accepts[snap.actor.id] !== s?.plan.version;
+  const ownUrl = (actor: any) =>
+    `${session!.base}${actor.role === "coordinator" ? "/" : "/app/"}?room=${session!.room}#access=${actor.token}`;
+  const openDelivery = (d: any) => {
+    setSelected(d);
+    setValue(String(d.qty));
+    setReject("0");
+    setNote("");
+    setSheet("delivery");
+  };
+  if (!ready)
+    return (
+      <View style={st.center}>
+        <ActivityIndicator color={C.green} />
+      </View>
+    );
+  if (!session || !snap)
+    return (
+      <View style={st.screen}>
+        <StatusBar style="dark" />
+        <ScrollView
+          contentContainerStyle={[st.welcome, { minHeight: "100%" }]}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={st.logo}>
+            <Icon name="leaf" size={33} />
+            <View>
+              <Text style={st.logoName}>abastece</Text>
+              <Text style={st.logoSub}>ESCOLA</Text>
+            </View>
+          </View>
+          <View style={st.welcomeArt}>
+            <Garden />
+          </View>
+          <Text accessibilityRole="header" style={st.welcomeTitle}>
+            O campo e a escola,{"\n"}
+            <Text style={{ fontStyle: "italic", color: "#52683f" }}>
+              mais próximos.
+            </Text>
+          </Text>
+          <Text style={st.welcomeText}>
+            Confirme sua colheita, acompanhe as entregas e faça parte de uma
+            rede que alimenta.
+          </Text>
+          <View style={st.welcomeBox}>
+            <Text style={st.label}>SEU PRÓXIMO PASSO</Text>
+            <Text style={st.welcomeBoxTitle}>Recebeu um convite?</Text>
+            <TextInput
+              accessibilityLabel="Convite de acesso"
+              placeholder="Cole aqui o convite da coordenação"
+              placeholderTextColor="#819074"
+              value={inviteInput}
+              onChangeText={setInviteInput}
+              autoCapitalize="none"
+              style={st.input}
+            />
+            <Btn label="Entrar com convite" onPress={openInvite} />
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            onPress={createDemo}
+            disabled={busy}
+            style={st.demoButton}
+          >
+            <Text style={st.demoText}>
+              {busy
+                ? "Preparando demonstração…"
+                : "Conhecer com dados de exemplo"}
+            </Text>
+            <Icon name="arrow" size={16} />
+          </Pressable>
+          {session && !snap && (
+            <Text style={st.muted}>Carregando as entregas do seu acesso…</Text>
+          )}
+          {error ? (
+            <Text accessibilityRole="alert" style={st.error}>
+              {error}
+            </Text>
+          ) : null}
+          <Text style={st.welcomeFooter}>
+            PROJETO ACADÊMICO · DADOS FICTÍCIOS
+          </Text>
+        </ScrollView>
+      </View>
+    );
+  return (
+    <View style={st.screen}>
+      <StatusBar style="dark" />
+      <View style={st.mobileContainer}>
+        <View style={st.header}>
+          <View style={st.logo}>
+            <Icon name="leaf" size={28} />
+            <View>
+              <Text style={st.logoName}>abastece</Text>
+              <Text style={st.logoSub}>ESCOLA</Text>
+            </View>
+          </View>
+          <Pressable
+            style={st.profileButton}
+            accessibilityLabel="Abrir acesso e informações"
+            accessibilityRole="button"
+            onPress={() => setTab("account")}
+          >
+            <Text style={st.profileText}>
+              {isSupplier ? supplier?.initials : school?.initials || "CO"}
+            </Text>
+          </Pressable>
+        </View>
+        <View style={st.connectionBar}>
+          <View
+            style={[
+              st.connectionDot,
+              !online && { backgroundColor: "#bc8c44" },
+            ]}
+          />
+          <Text style={st.connectionText}>
+            {online
+              ? "Conectado à Rede do Vale"
+              : "Sem conexão · dados da última atualização"}
+          </Text>
+          <Text style={st.cycleSmall}>CICLO 24</Text>
+        </View>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={st.content}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Animated.View
+            style={{
+              opacity: fade,
+              transform: [
+                {
+                  translateY: fade.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: reduce ? [0, 0] : [9, 0],
+                  }),
+                },
+              ],
+            }}
+          >
+            {error ? (
+              <View accessibilityRole="alert" style={st.errorBox}>
+                <Icon name="alert" size={18} color="#985b34" />
+                <Text style={st.error}>{error}</Text>
+              </View>
+            ) : null}
+            {queue && (
+              <View style={st.pendingBox}>
+                <View
+                  style={{ flexDirection: "row", gap: 8, alignItems: "center" }}
+                >
+                  <Icon name="clock" size={20} color={C.amber} />
+                  <Text style={st.pendingTitle}>
+                    Conferência pendente de envio
+                  </Text>
+                </View>
+                <Text style={st.pendingText}>
+                  Sua anotação está salva neste aparelho. Envie ao recuperar a
+                  conexão.
+                </Text>
+                <Btn
+                  label="Tentar sincronizar"
+                  onPress={replay}
+                  disabled={busy}
+                  secondary
+                  icon="refresh"
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={discardPending}
+                  style={{ paddingVertical: 14 }}
+                >
+                  <Text style={st.smallLink}>
+                    Descartar somente a anotação local
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+            {tab === "home" && (
+              <>
+                <Text style={st.greeting}>
+                  Olá,{" "}
+                  {isSupplier
+                    ? supplier?.person.split(" ")[0]
+                    : "equipe da escola"}{" "}
+                  <Text style={{ color: "#8fa36e" }}>☀</Text>
+                </Text>
+                <View style={st.hero}>
+                  <View style={st.heroText}>
+                    <Text style={st.label}>DO CAMPO AO PRATO</Text>
+                    <Text accessibilityRole="header" style={st.heroTitle}>
+                      {heroTitle}
+                    </Text>
+                    <Text style={st.heroSubtitle}>
+                      {isSupplier
+                        ? "Cada compromisso seu faz\ndiferença na mesa da escola."
+                        : "Cada conferência cuida do\nalimento que chega à mesa."}
+                    </Text>
+                  </View>
+                  <View style={st.garden}>
+                    <Garden />
+                  </View>
+                </View>
+                <View style={st.miniStats}>
+                  <View style={st.miniStat}>
+                    <Icon name={isSupplier ? "box" : "school"} size={20} />
+                    <Text style={st.miniNumber}>
+                      {fmt(total)}
+                      <Text style={st.numberUnit}> kg</Text>
+                    </Text>
+                    <Text style={st.miniLabel}>previstos neste ciclo</Text>
+                  </View>
+                  <View style={st.statDivider} />
+                  <View style={st.miniStat}>
+                    <Icon name="check" size={20} />
+                    <Text style={st.miniNumber}>
+                      {done}
+                      <Text style={st.numberUnit}> de {list.length}</Text>
+                    </Text>
+                    <Text style={st.miniLabel}>entregas conferidas</Text>
+                  </View>
+                </View>
+                {canAccept && (
+                  <View style={st.proposalCard}>
+                    <View style={st.proposalIcon}>
+                      <Icon name="calendar" size={24} />
+                    </View>
+                    <Text style={st.proposalTitle}>
+                      Um novo plano para confirmar
+                    </Text>
+                    <Text style={st.proposalText}>
+                      A coordenação preparou a versão {s.plan.version}. Confira
+                      quantidades e destinos antes de aceitar.
+                    </Text>
+                    <Btn
+                      label="Conferir proposta"
+                      onPress={() => setSheet("proposal")}
+                    />
+                  </View>
+                )}
+                <View style={st.sectionHeading}>
+                  <Text accessibilityRole="header" style={st.sectionTitle}>
+                    Na sua agenda
+                  </Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => setTab("deliveries")}
+                    style={st.smallButton}
+                  >
+                    <Text style={st.smallLink}>Ver todas</Text>
+                    <Icon name="arrow" size={15} />
+                  </Pressable>
+                </View>
+                {list.slice(0, 3).map((d: any) => delivery(d))}
+                <View style={st.communityCard}>
+                  <Icon name="leaf" size={24} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={st.communityTitle}>O alimento aproxima.</Text>
+                    <Text style={st.communityText}>
+                      Você faz parte de uma rede de produtores e escolas que
+                      trabalham juntos.
+                    </Text>
+                  </View>
+                </View>
+              </>
+            )}
+            {tab === "deliveries" && (
+              <>
+                <Text style={st.label}>UM COMPROMISSO DE CADA VEZ</Text>
+                <Text accessibilityRole="header" style={st.pageTitle}>
+                  Suas entregas
+                </Text>
+                <Text style={st.pageSubtitle}>
+                  12 de novembro · {list.length} entregas no ciclo
+                </Text>
+                {list.map((d: any) => delivery(d))}
+              </>
+            )}
+            {tab === "capacity" && isSupplier && (
+              <>
+                <Text style={st.label}>DA NOSSA TERRA</Text>
+                <Text accessibilityRole="header" style={st.pageTitle}>
+                  Sua colheita
+                </Text>
+                <Text style={st.pageSubtitle}>
+                  Confirme o que você consegue entregar. A coordenação acompanha
+                  as mesmas quantidades.
+                </Text>
+                {s.capacities.map((c: any) => (
+                  <View style={st.capacityCard} key={c.product}>
+                    <View style={st.capacityTop}>
+                      <View
+                        style={[
+                          st.foodIcon,
+                          {
+                            backgroundColor:
+                              c.product === "banana" ? "#f2efd4" : "#f7e4d0",
+                          },
+                        ]}
+                      >
+                        <Icon
+                          name={c.product === "banana" ? "banana" : "carrot"}
+                          size={25}
+                          color={c.product === "banana" ? "#857f37" : "#a46e3e"}
+                        />
+                      </View>
+                      <Text style={st.capacityTitle}>
+                        {s.products.find((p: any) => p.id === c.product).name}
+                      </Text>
+                      <View style={st.confirmedPill}>
+                        <Text style={st.confirmedText}>Confirmado</Text>
+                      </View>
+                    </View>
+                    <Text style={st.capacityNumber}>
+                      {fmt(c.qty)}
+                      <Text style={st.capacityUnit}> kg</Text>
+                    </Text>
+                    <Text style={st.capacityDescription}>
+                      Disponíveis para o ciclo 24
+                    </Text>
+                    <View style={st.capacityFoot}>
+                      <Text style={st.capacityLimit}>
+                        Limite no cenário: {fmt(c.limit)} kg
+                      </Text>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`Atualizar quantidade de ${c.product}`}
+                        onPress={() => {
+                          setSelected(c);
+                          setValue(String(c.qty));
+                          setSheet("capacity");
+                        }}
+                        style={st.smallButton}
+                      >
+                        <Text style={st.smallLink}>Atualizar</Text>
+                        <Icon name="arrow" size={16} />
+                      </Pressable>
+                    </View>
+                  </View>
+                ))}
+                <View style={st.tip}>
+                  <Icon name="alert" size={20} />
+                  <Text style={st.tipText}>
+                    Mudou a quantidade? Avise por aqui. A coordenação poderá
+                    reorganizar o plano antes da saída.
+                  </Text>
+                </View>
+              </>
+            )}
+            {tab === "history" && (
+              <>
+                <Text style={st.label}>TUDO FICA REGISTRADO</Text>
+                <Text accessibilityRole="header" style={st.pageTitle}>
+                  Seu histórico
+                </Text>
+                <Text style={st.pageSubtitle}>
+                  Confirmações, mudanças e recebimentos.
+                </Text>
+                {s.events.map((e: any) => (
+                  <View style={st.event} key={e.id}>
+                    <View style={st.eventIcon}>
+                      <Icon name="check" size={16} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={st.eventTitle}>{e.title}</Text>
+                      <Text style={st.eventText}>{e.detail}</Text>
+                      <Text style={st.eventTime}>
+                        {new Date(e.at).toLocaleTimeString("pt-BR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        · {e.actor}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </>
+            )}
+            {tab === "account" && (
+              <>
+                <Text style={st.label}>GENTE QUE FAZ ACONTECER</Text>
+                <Text accessibilityRole="header" style={st.pageTitle}>
+                  Seu acesso
+                </Text>
+                <View style={st.accountCard}>
+                  <View style={st.accountAvatar}>
+                    <Icon name={isSupplier ? "leaf" : "school"} size={34} />
+                  </View>
+                  <Text style={st.accountName}>{snap.actor.name}</Text>
+                  <Text style={st.accountRole}>
+                    {isSupplier
+                      ? "Produtor de agricultura familiar"
+                      : "Responsável pelo recebimento"}
+                  </Text>
+                  <View style={st.demoPill}>
+                    <Text style={st.demoPillText}>
+                      Dados fictícios · Projeto acadêmico
+                    </Text>
+                  </View>
+                </View>
+                {session.invites && (
+                  <>
+                    <Text style={st.sectionTitle}>Explorar a integração</Text>
+                    <Text style={st.pageSubtitle}>
+                      Troque de perfil dentro do mesmo cenário ou abra a
+                      coordenação para ver o efeito das ações.
+                    </Text>
+                    {session.invites
+                      .filter((x: any) => x.role !== "coordinator")
+                      .map((i: any) => (
+                        <Pressable
+                          key={i.id}
+                          style={st.accessRow}
+                          accessibilityRole="button"
+                          onPress={() => {
+                            setSession({ ...session, token: i.token });
+                            setSnap(null);
+                            setTab("home");
+                          }}
+                        >
+                          <Icon
+                            name={i.role === "supplier" ? "leaf" : "school"}
+                            size={22}
+                          />
+                          <Text style={st.accessName}>{i.name}</Text>
+                          <Icon name="arrow" size={17} />
+                        </Pressable>
+                      ))}
+                    <Btn
+                      label="Abrir coordenação na web"
+                      secondary
+                      icon="link"
+                      onPress={() =>
+                        Linking.openURL(
+                          ownUrl(
+                            session.invites!.find(
+                              (i) => i.role === "coordinator",
+                            ),
+                          ),
+                        )
+                      }
+                    />
+                  </>
+                )}
+                <Text style={[st.sectionTitle, { marginTop: 25 }]}>
+                  Outro convite
+                </Text>
+                <TextInput
+                  accessibilityLabel="Novo convite de acesso"
+                  value={inviteInput}
+                  onChangeText={setInviteInput}
+                  placeholder="Cole o convite completo"
+                  autoCapitalize="none"
+                  style={st.input}
+                />
+                <Btn
+                  label="Entrar com outro convite"
+                  onPress={openInvite}
+                  secondary
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={async () => {
+                    await AsyncStorage.removeItem("abastece-mobile-session");
+                    await AsyncStorage.removeItem("abastece-last-snapshot");
+                    setSession(null);
+                    setSnap(null);
+                    setTab("home");
+                  }}
+                  style={st.logout}
+                >
+                  <Text style={st.smallLink}>Sair deste acesso</Text>
+                </Pressable>
+                <Text style={st.disclaimer}>
+                  O aplicativo coordena compromissos e registra conferências. As
+                  decisões de compra e de segurança alimentar pertencem às
+                  pessoas responsáveis.
+                </Text>
+              </>
+            )}
+          </Animated.View>
+          <Text style={st.footer}>
+            FEITO DE CONEXÕES. CULTIVADO EM COMUNIDADE.
+          </Text>
+        </ScrollView>
+        <View style={st.bottomNav}>
+          {(isSupplier
+            ? [
+                ["home", "Início", "home"],
+                ["capacity", "Colheita", "leaf"],
+                ["deliveries", "Entregas", "truck"],
+                ["history", "Histórico", "clock"],
+              ]
+            : [
+                ["home", "Início", "home"],
+                ["deliveries", "Entregas", "box"],
+                ["history", "Histórico", "clock"],
+                ["account", "Acesso", "user"],
+              ]
+          ).map(([id, label, icon]) => (
+            <Pressable
+              key={id}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: tab === id }}
+              accessibilityLabel={label}
+              onPress={() => {
+                setTab(id);
+                setError("");
+              }}
+              style={st.navItem}
+            >
+              <View style={[st.navIcon, tab === id && st.navIconActive]}>
+                <Icon
+                  name={icon}
+                  size={21}
+                  color={tab === id ? C.green : "#829273"}
+                />
+              </View>
+              <Text style={[st.navText, tab === id && st.navTextActive]}>
+                {label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        {toast && (
+          <View style={st.toast} accessibilityLiveRegion="polite">
+            <Icon name="check" size={19} color={C.lime} />
+            <Text style={st.toastText}>{toast}</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Fechar confirmação"
+              onPress={() => setToast("")}
+              style={{ padding: 6 }}
+            >
+              <Icon name="close" size={17} color={C.lime} />
+            </Pressable>
+          </View>
+        )}
+        <Modal
+          visible={!!sheet}
+          transparent
+          animationType={reduce ? "none" : "slide"}
+          onRequestClose={close}
+        >
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            style={st.modalBackdrop}
+          >
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={close}
+              accessibilityLabel="Fechar detalhes"
+            />
+            <View
+              style={[st.sheet, { maxWidth: width > 600 ? 500 : undefined }]}
+              accessibilityViewIsModal
+            >
+              <View style={st.sheetHandle} />
+              <View style={st.sheetTop}>
+                <Text accessibilityRole="header" style={st.sheetTitle}>
+                  {sheet === "capacity"
+                    ? "Atualizar sua colheita"
+                    : sheet === "proposal"
+                      ? "Confira os compromissos"
+                      : "Detalhes da entrega"}
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Fechar janela"
+                  onPress={close}
+                  style={st.closeButton}
+                >
+                  <Icon name="close" size={21} />
+                </Pressable>
+              </View>
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ paddingBottom: 20 }}
+              >
+                {error ? (
+                  <Text accessibilityRole="alert" style={st.error}>
+                    {error}
+                  </Text>
+                ) : null}
+                {sheet === "capacity" && selected && (
+                  <>
+                    <Text style={st.sheetIntro}>
+                      {
+                        s.products.find((p: any) => p.id === selected.product)
+                          .name
+                      }{" "}
+                      · ciclo 24
+                    </Text>
+                    <Text style={st.fieldLabel}>
+                      Quanto você consegue entregar em kg?
+                    </Text>
+                    <TextInput
+                      accessibilityLabel="Quantidade disponível em quilogramas"
+                      autoFocus
+                      keyboardType="decimal-pad"
+                      value={value}
+                      onChangeText={setValue}
+                      style={st.bigInput}
+                    />
+                    <Text style={st.inputHelp}>
+                      Limite operacional do cenário: {fmt(selected.limit)} kg. A
+                      alteração será enviada para a coordenação.
+                    </Text>
+                    <Btn
+                      label={busy ? "Confirmando…" : "Confirmar quantidade"}
+                      disabled={busy || !online}
+                      onPress={() =>
+                        send("capacity", {
+                          product: selected.product,
+                          qty: value,
+                        })
+                      }
+                    />
+                  </>
+                )}
+                {sheet === "proposal" && (
+                  <>
+                    <Text style={st.sheetIntro}>
+                      Versão {s.plan.version} · confira alimento, escola e
+                      quantidade antes de confirmar.
+                    </Text>
+                    {list.map((d: any) => (
+                      <View key={d.id} style={st.proposalLine}>
+                        <Icon
+                          name={d.product === "banana" ? "banana" : "carrot"}
+                          size={22}
+                        />
+                        <View style={{ flex: 1 }}>
+                          <Text style={st.deliveryProduct}>
+                            {
+                              s.products.find((p: any) => p.id === d.product)
+                                .name
+                            }
+                          </Text>
+                          <Text style={st.deliveryMeta}>
+                            {
+                              s.schools.find((x: any) => x.id === d.school)
+                                .short
+                            }
+                          </Text>
+                        </View>
+                        <Text style={st.proposalQty}>{fmt(d.qty)} kg</Text>
+                      </View>
+                    ))}
+                    <Text style={st.inputHelp}>
+                      Ao confirmar, você registra que pode atender estes
+                      compromissos. Uma mudança posterior poderá exigir nova
+                      confirmação.
+                    </Text>
+                    <Btn
+                      label={busy ? "Confirmando…" : "Confirmar proposta"}
+                      disabled={busy || !online}
+                      onPress={() =>
+                        send("accept", { version: s.plan.version })
+                      }
+                    />
+                  </>
+                )}
+                {sheet === "delivery" && selected && (
+                  <>
+                    <View style={st.deliveryDetailHero}>
+                      <Icon
+                        name={
+                          selected.product === "banana" ? "banana" : "carrot"
+                        }
+                        size={35}
+                      />
+                      <View>
+                        <Text style={st.deliveryDetailProduct}>
+                          {
+                            s.products.find(
+                              (p: any) => p.id === selected.product,
+                            ).name
+                          }
+                        </Text>
+                        <Text style={st.deliveryMeta}>
+                          {fmt(selected.qty)} kg previstos
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={st.detailRow}>
+                      <Text style={st.detailLabel}>
+                        {isSupplier ? "Destino" : "Origem"}
+                      </Text>
+                      <Text style={st.detailValue}>
+                        {isSupplier
+                          ? s.schools.find((x: any) => x.id === selected.school)
+                              .short
+                          : s.suppliers.find(
+                              (x: any) => x.id === selected.supplier,
+                            ).short}
+                      </Text>
+                    </View>
+                    <View style={st.detailRow}>
+                      <Text style={st.detailLabel}>Entrega</Text>
+                      <Text style={st.detailValue}>
+                        12 de novembro · {selected.time}
+                      </Text>
+                    </View>
+                    <View style={st.detailRow}>
+                      <Text style={st.detailLabel}>Situação</Text>
+                      <Text style={st.detailValue}>
+                        {
+                          {
+                            scheduled: "Agendada",
+                            dispatched: "A caminho",
+                            received: "Conferida",
+                          }[selected.status as "scheduled"]
+                        }
+                      </Text>
+                    </View>
+                    {isSupplier && selected.status === "scheduled" && (
+                      <>
+                        <Text style={st.inputHelp}>
+                          Confirme a saída quando a mercadoria estiver pronta
+                          para seguir à escola. Esta ação precisa de conexão.
+                        </Text>
+                        <Btn
+                          label={
+                            busy ? "Registrando…" : "Confirmar saída da entrega"
+                          }
+                          onPress={() => send("dispatch", { id: selected.id })}
+                          disabled={busy || !online}
+                          icon="truck"
+                        />
+                      </>
+                    )}
+                    {!isSupplier && selected.status === "dispatched" && (
+                      <>
+                        <Text style={st.fieldLabel}>
+                          Quantidade recebida em kg
+                        </Text>
+                        <TextInput
+                          accessibilityLabel="Quantidade recebida em quilogramas"
+                          keyboardType="decimal-pad"
+                          value={value}
+                          onChangeText={setValue}
+                          style={st.input}
+                        />
+                        <Text style={st.fieldLabel}>
+                          Quantidade rejeitada em kg
+                        </Text>
+                        <TextInput
+                          accessibilityLabel="Quantidade rejeitada em quilogramas"
+                          keyboardType="decimal-pad"
+                          value={reject}
+                          onChangeText={setReject}
+                          style={st.input}
+                        />
+                        <Text style={st.fieldLabel}>Motivo ou observação</Text>
+                        <TextInput
+                          accessibilityLabel="Motivo da rejeição ou observação"
+                          multiline
+                          value={note}
+                          onChangeText={setNote}
+                          placeholder="Descreva a conferência"
+                          style={[
+                            st.input,
+                            { minHeight: 75, textAlignVertical: "top" },
+                          ]}
+                        />
+                        <Text style={st.inputHelp}>
+                          A coordenação verá o que foi aceito. Sem conexão, a
+                          anotação ficará pendente neste aparelho.
+                        </Text>
+                        <Btn
+                          label={
+                            busy
+                              ? "Registrando…"
+                              : online
+                                ? "Confirmar recebimento"
+                                : "Salvar conferência pendente"
+                          }
+                          disabled={busy}
+                          onPress={() =>
+                            send("receive", {
+                              id: selected.id,
+                              delivered: value,
+                              rejected: reject,
+                              note,
+                            })
+                          }
+                          icon="check"
+                        />
+                      </>
+                    )}
+                    {selected.status === "received" && (
+                      <View style={st.receiptCard}>
+                        <Icon name="check" size={24} />
+                        <Text style={st.receiptTitle}>
+                          Conferência concluída
+                        </Text>
+                        <Text style={st.receiptText}>
+                          {fmt(selected.receipt.accepted)} kg aceitos ·{" "}
+                          {fmt(selected.receipt.rejected)} kg rejeitados
+                        </Text>
+                        {selected.receipt.note ? (
+                          <Text style={st.receiptText}>
+                            {selected.receipt.note}
+                          </Text>
+                        ) : null}
+                      </View>
+                    )}
+                    {!isSupplier && selected.status === "scheduled" && (
+                      <Text style={st.inputHelp}>
+                        Aguarde o produtor registrar a saída antes de conferir a
+                        mercadoria. A agenda será atualizada automaticamente.
+                      </Text>
+                    )}
+                  </>
+                )}
+              </ScrollView>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+      </View>
+    </View>
+  );
+  function delivery(d: any) {
+    return (
+      <Pressable
+        key={d.id}
+        accessibilityRole="button"
+        accessibilityLabel={`${s.products.find((p: any) => p.id === d.product).name}, ${fmt(d.qty)} quilogramas, ${isSupplier ? s.schools.find((x: any) => x.id === d.school).short : s.suppliers.find((x: any) => x.id === d.supplier).short}, ${d.status === "scheduled" ? "agendada" : d.status === "dispatched" ? "a caminho" : "conferida"}. Ver detalhes.`}
+        onPress={() => openDelivery(d)}
+        style={({ pressed }) => [
+          st.deliveryCard,
+          pressed && { backgroundColor: "#f0f4e5" },
+        ]}
+      >
+        <View style={st.deliveryTop}>
+          <View
+            style={[
+              st.foodIcon,
+              {
+                backgroundColor: d.product === "banana" ? "#f1efd7" : "#f7e9d9",
+              },
+            ]}
+          >
+            <Icon
+              name={d.product === "banana" ? "banana" : "carrot"}
+              size={22}
+              color={d.product === "banana" ? "#8b853d" : "#aa7746"}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={st.deliveryProduct}>
+              {s.products.find((p: any) => p.id === d.product).name}
+            </Text>
+            <Text style={st.deliveryMeta}>
+              {isSupplier
+                ? s.schools.find((x: any) => x.id === d.school).short
+                : s.suppliers.find((x: any) => x.id === d.supplier).short}
+            </Text>
+          </View>
+          <Text style={st.deliveryQty}>
+            {fmt(d.qty)}
+            <Text style={st.qtyUnit}> kg</Text>
+          </Text>
+        </View>
+        <View style={st.deliveryBottom}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+            <Icon name="clock" size={13} color="#7e8d70" />
+            <Text style={st.deliveryTime}>12 nov · {d.time}</Text>
+          </View>
+          <View
+            style={[
+              st.status,
+              d.status === "dispatched" && { backgroundColor: "#e5edf2" },
+              d.status === "received" && { backgroundColor: "#e7efda" },
+            ]}
+          >
+            <View
+              style={[
+                st.statusDot,
+                d.status === "received" && { backgroundColor: "#6a8e48" },
+                d.status === "dispatched" && { backgroundColor: "#6e91a4" },
+              ]}
+            />
+            <Text style={st.statusText}>
+              {
+                {
+                  scheduled: "Agendada",
+                  dispatched: "A caminho",
+                  received: "Conferida",
+                }[d.status as "scheduled"]
+              }
+            </Text>
+          </View>
+        </View>
+      </Pressable>
+    );
+  }
+}
+const serif = Platform.select({
+  ios: "Georgia",
+  android: "serif",
+  web: "Georgia",
+});
+const st = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: C.bg },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: C.bg,
+  },
+  mobileContainer: {
+    flex: 1,
+    width: "100%",
+    maxWidth: 560,
+    alignSelf: "center",
+    backgroundColor: C.bg,
+  },
+  header: {
+    paddingTop: 25,
+    paddingHorizontal: 25,
+    paddingBottom: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  logo: { flexDirection: "row", alignItems: "center", gap: 7 },
+  logoName: {
+    fontSize: 24,
+    fontWeight: "600",
+    letterSpacing: -1.2,
+    color: C.green,
+  },
+  logoSub: {
+    fontSize: 12,
+    letterSpacing: 4.6,
+    color: C.green,
+    marginTop: 1,
+    fontWeight: "500",
+  },
+  profileButton: {
+    width: 41,
+    height: 41,
+    borderRadius: 30,
+    backgroundColor: "#e2e8cf",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profileText: { fontSize: 12, fontWeight: "600", color: "#52683f" },
+  connectionBar: {
+    marginHorizontal: 25,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderColor: C.line,
+  },
+  connectionDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 5,
+    backgroundColor: "#799f56",
+  },
+  connectionText: { fontSize: 12, color: "#5d7052", flex: 1 },
+  cycleSmall: { fontSize: 12, letterSpacing: 1.1, color: "#5d7052" },
+  content: { paddingHorizontal: 25, paddingTop: 22, paddingBottom: 20 },
+  greeting: {
+    fontSize: 15,
+    color: "#52664a",
+    fontWeight: "500",
+    marginBottom: 19,
+  },
+  hero: {
+    minHeight: 239,
+    padding: 22,
+    paddingBottom: 100,
+    borderRadius: 15,
+    backgroundColor: "#e9eed8",
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#e0e7cf",
+  },
+  heroText: { zIndex: 1 },
+  label: {
+    fontSize: 12,
+    letterSpacing: 1.8,
+    fontWeight: "600",
+    color: "#52683f",
+    marginBottom: 10,
+  },
+  heroTitle: {
+    fontFamily: serif,
+    fontSize: 35,
+    lineHeight: 37,
+    color: C.green,
+    letterSpacing: -1.2,
+  },
+  heroSubtitle: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: "#52683f",
+    marginTop: 12,
+  },
+  garden: {
+    position: "absolute",
+    bottom: -12,
+    right: -28,
+    width: "100%",
+    maxWidth: 400,
+  },
+  miniStats: {
+    flexDirection: "row",
+    borderRadius: 12,
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: C.line,
+    paddingVertical: 19,
+    marginTop: 17,
+    marginBottom: 26,
+  },
+  miniStat: { flex: 1, paddingHorizontal: 21 },
+  miniNumber: {
+    fontSize: 29,
+    color: C.green,
+    letterSpacing: -1,
+    marginTop: 9,
+    fontWeight: "500",
+  },
+  numberUnit: {
+    fontSize: 13,
+    color: "#5d7052",
+    fontWeight: "400",
+    letterSpacing: 0,
+  },
+  miniLabel: { fontSize: 12, color: "#5d7052", marginTop: 5 },
+  statDivider: { width: 1, backgroundColor: C.line, marginVertical: 4 },
+  sectionHeading: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 13,
+  },
+  sectionTitle: {
+    fontSize: 19,
+    color: C.green,
+    fontWeight: "500",
+    letterSpacing: -0.6,
+  },
+  smallButton: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  smallLink: { fontSize: 12, color: "#536e40", fontWeight: "500" },
+  deliveryCard: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: C.line,
+    borderRadius: 11,
+    padding: 16,
+    marginBottom: 12,
+  },
+  deliveryTop: { flexDirection: "row", gap: 11, alignItems: "center" },
+  foodIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  deliveryProduct: { fontSize: 14, fontWeight: "500", color: C.green },
+  deliveryMeta: { fontSize: 12, color: "#5d7052", marginTop: 5 },
+  deliveryQty: {
+    fontSize: 22,
+    color: C.green,
+    fontWeight: "500",
+    letterSpacing: -0.7,
+  },
+  qtyUnit: {
+    fontSize: 12,
+    fontWeight: "400",
+    color: "#5d7052",
+    letterSpacing: 0,
+  },
+  deliveryBottom: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderTopWidth: 1,
+    borderTopColor: "#edf0e4",
+    paddingTop: 12,
+    marginTop: 14,
+  },
+  deliveryTime: { fontSize: 12, color: "#5d7052" },
+  status: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    backgroundColor: "#f4efdf",
+    borderRadius: 5,
+  },
+  statusDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 4,
+    backgroundColor: "#a08343",
+  },
+  statusText: { fontSize: 12, fontWeight: "500", color: "#52683f" },
+  communityCard: {
+    backgroundColor: "#edf1e2",
+    borderRadius: 10,
+    padding: 18,
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+    marginTop: 14,
+  },
+  communityTitle: { fontSize: 14, color: "#54713f", fontWeight: "500" },
+  communityText: {
+    fontSize: 12,
+    lineHeight: 16,
+    color: "#52683f",
+    marginTop: 5,
+  },
+  bottomNav: {
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderColor: C.line,
+    flexDirection: "row",
+    paddingTop: 10,
+    paddingBottom: 12,
+    paddingHorizontal: 10,
+  },
+  navItem: {
+    flex: 1,
+    minHeight: 54,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+  },
+  navIcon: {
+    width: 48,
+    height: 29,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+  },
+  navIconActive: { backgroundColor: "#e9f0da" },
+  navText: { fontSize: 12, color: "#5d7052" },
+  navTextActive: { color: C.green, fontWeight: "600" },
+  footer: {
+    fontSize: 12,
+    letterSpacing: 1.1,
+    textAlign: "center",
+    color: "#5d7052",
+    marginVertical: 26,
+    lineHeight: 15,
+  },
+  pageTitle: {
+    fontFamily: serif,
+    fontSize: 38,
+    color: C.green,
+    letterSpacing: -1.1,
+    marginBottom: 9,
+  },
+  pageSubtitle: {
+    fontSize: 12,
+    lineHeight: 20,
+    color: C.muted,
+    marginBottom: 22,
+  },
+  capacityCard: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: C.line,
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 17,
+  },
+  capacityTop: { flexDirection: "row", gap: 10, alignItems: "center" },
+  capacityTitle: { fontSize: 17, fontWeight: "500", color: C.green, flex: 1 },
+  confirmedPill: { backgroundColor: "#edf3e2", padding: 6, borderRadius: 4 },
+  confirmedText: { fontSize: 12, color: "#52683f" },
+  capacityNumber: {
+    fontSize: 47,
+    fontWeight: "400",
+    color: C.green,
+    letterSpacing: -2,
+    marginTop: 23,
+  },
+  capacityUnit: {
+    fontSize: 18,
+    fontWeight: "400",
+    letterSpacing: 0,
+    color: "#5d7052",
+  },
+  capacityDescription: { fontSize: 12, color: "#5d7052", marginTop: 4 },
+  capacityFoot: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderTopWidth: 1,
+    borderColor: C.line,
+    marginTop: 20,
+    paddingTop: 6,
+  },
+  capacityLimit: { fontSize: 12, color: "#5d7052" },
+  tip: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    padding: 17,
+    backgroundColor: "#eaf0dd",
+    borderRadius: 10,
+  },
+  tipText: { flex: 1, fontSize: 12, lineHeight: 18, color: "#52683f" },
+  proposalCard: {
+    backgroundColor: "#254733",
+    borderRadius: 12,
+    padding: 21,
+    marginBottom: 25,
+  },
+  proposalIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: C.lime,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  proposalTitle: {
+    fontSize: 19,
+    lineHeight: 24,
+    color: "#f5f8ec",
+    fontWeight: "500",
+    letterSpacing: -0.6,
+  },
+  proposalText: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: "#c1d3b3",
+    marginTop: 9,
+    marginBottom: 17,
+  },
+  button: {
+    minHeight: 48,
+    borderRadius: 7,
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    backgroundColor: C.green,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  secondary: {
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#dbe3ce",
+  },
+  buttonText: { color: "#fff", fontWeight: "500", fontSize: 12 },
+  proposalLine: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderColor: C.line,
+  },
+  proposalQty: { fontSize: 18, color: C.green },
+  event: {
+    flexDirection: "row",
+    gap: 12,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderColor: C.line,
+  },
+  eventIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 20,
+    backgroundColor: "#e5edda",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  eventTitle: { fontSize: 13, fontWeight: "500", color: C.green },
+  eventText: { fontSize: 12, lineHeight: 18, color: C.muted, marginTop: 6 },
+  eventTime: { fontSize: 12, color: "#5d7052", marginTop: 9 },
+  accountCard: {
+    alignItems: "center",
+    padding: 25,
+    backgroundColor: "#eef2e3",
+    borderWidth: 1,
+    borderColor: C.line,
+    borderRadius: 13,
+    marginBottom: 28,
+  },
+  accountAvatar: {
+    width: 68,
+    height: 68,
+    backgroundColor: "#dbe6bf",
+    borderRadius: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  accountName: {
+    fontFamily: serif,
+    fontSize: 29,
+    color: C.green,
+    textAlign: "center",
+  },
+  accountRole: {
+    fontSize: 12,
+    color: C.muted,
+    textAlign: "center",
+    marginTop: 7,
+  },
+  demoPill: {
+    backgroundColor: "#e1eacb",
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    marginTop: 19,
+  },
+  demoPillText: { fontSize: 12, color: "#52683f" },
+  accessRow: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderColor: C.line,
+  },
+  accessName: { flex: 1, fontSize: 12, color: C.green },
+  input: {
+    borderWidth: 1,
+    borderColor: "#d8e1ca",
+    backgroundColor: "white",
+    borderRadius: 7,
+    minHeight: 49,
+    padding: 13,
+    fontSize: 13,
+    color: C.green,
+    marginVertical: 10,
+  },
+  fieldLabel: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: C.green,
+    marginTop: 15,
+  },
+  bigInput: {
+    borderWidth: 1,
+    borderColor: "#c7d5b3",
+    borderRadius: 9,
+    padding: 18,
+    fontSize: 36,
+    color: C.green,
+    marginVertical: 15,
+    backgroundColor: "white",
+  },
+  inputHelp: {
+    fontSize: 12,
+    lineHeight: 19,
+    color: C.muted,
+    marginBottom: 23,
+    marginTop: 10,
+  },
+  logout: { alignItems: "center", padding: 25 },
+  disclaimer: { fontSize: 12, lineHeight: 17, color: "#52683f", marginTop: 10 },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "#172e23a6",
+    alignItems: "center",
+  },
+  sheet: {
+    width: "100%",
+    maxHeight: "90%",
+    backgroundColor: "#fafbf5",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 25,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === "web" ? 15 : 25,
+  },
+  sheetHandle: {
+    height: 4,
+    width: 35,
+    borderRadius: 4,
+    backgroundColor: "#d2dbc6",
+    alignSelf: "center",
+    marginBottom: 14,
+  },
+  sheetTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+    marginBottom: 12,
+  },
+  sheetTitle: {
+    fontSize: 21,
+    fontWeight: "500",
+    color: C.green,
+    flex: 1,
+    letterSpacing: -0.6,
+  },
+  closeButton: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sheetIntro: {
+    fontSize: 12,
+    lineHeight: 20,
+    color: C.muted,
+    marginBottom: 12,
+  },
+  deliveryDetailHero: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    padding: 20,
+    backgroundColor: "#ecf0df",
+    borderRadius: 11,
+    marginBottom: 15,
+  },
+  deliveryDetailProduct: { fontSize: 25, fontFamily: serif, color: C.green },
+  detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 20,
+    paddingVertical: 13,
+    borderBottomWidth: 1,
+    borderColor: C.line,
+  },
+  detailLabel: { fontSize: 12, color: C.muted },
+  detailValue: {
+    fontSize: 12,
+    color: C.green,
+    textAlign: "right",
+    maxWidth: "70%",
+  },
+  receiptCard: {
+    marginTop: 20,
+    padding: 20,
+    borderRadius: 10,
+    backgroundColor: "#eaf2dc",
+    alignItems: "center",
+  },
+  receiptTitle: {
+    fontSize: 17,
+    fontWeight: "500",
+    color: C.green,
+    marginTop: 10,
+  },
+  receiptText: {
+    fontSize: 12,
+    color: C.muted,
+    textAlign: "center",
+    marginTop: 8,
+    lineHeight: 18,
+  },
+  toast: {
+    position: "absolute",
+    bottom: Platform.OS === "web" ? 95 : 117,
+    left: 16,
+    right: 16,
+    backgroundColor: "#244734",
+    padding: 15,
+    borderRadius: 10,
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center",
+    shadowColor: "#17361c",
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  toastText: { flex: 1, color: "white", fontSize: 12, lineHeight: 17 },
+  error: { color: "#975535", fontSize: 12, lineHeight: 19 },
+  errorBox: {
+    padding: 15,
+    backgroundColor: "#f8e8dd",
+    borderRadius: 8,
+    marginBottom: 16,
+    flexDirection: "row",
+    gap: 8,
+  },
+  pendingBox: {
+    padding: 18,
+    backgroundColor: "#f4edd8",
+    borderWidth: 1,
+    borderColor: "#e7d9b0",
+    borderRadius: 11,
+    marginBottom: 20,
+  },
+  pendingTitle: { fontSize: 13, color: C.amber, fontWeight: "500", flex: 1 },
+  pendingText: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: "#816a38",
+    marginVertical: 11,
+  },
+  welcome: {
+    paddingHorizontal: 28,
+    paddingTop: 38,
+    paddingBottom: 25,
+    maxWidth: 520,
+    width: "100%",
+    alignSelf: "center",
+  },
+  welcomeArt: {
+    marginTop: 30,
+    backgroundColor: "#edf0dc",
+    borderRadius: 15,
+    overflow: "hidden",
+  },
+  welcomeTitle: {
+    fontSize: 36,
+    fontFamily: serif,
+    lineHeight: 40,
+    color: C.green,
+    letterSpacing: -1.1,
+    marginTop: 28,
+  },
+  welcomeText: {
+    fontSize: 13,
+    lineHeight: 22,
+    color: C.muted,
+    marginTop: 15,
+    marginBottom: 24,
+  },
+  welcomeBox: {
+    backgroundColor: "#fff",
+    borderRadius: 11,
+    borderWidth: 1,
+    borderColor: C.line,
+    padding: 20,
+  },
+  welcomeBoxTitle: { fontSize: 17, color: C.green, fontWeight: "500" },
+  demoButton: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 22,
+    minHeight: 48,
+  },
+  demoText: { fontSize: 12, color: C.green, fontWeight: "500" },
+  welcomeFooter: {
+    fontSize: 12,
+    color: "#52683f",
+    letterSpacing: 1.2,
+    textAlign: "center",
+    marginTop: 20,
+  },
+  muted: { fontSize: 12, color: C.muted, textAlign: "center", marginTop: 10 },
 });

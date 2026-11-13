@@ -1,0 +1,21 @@
+/* Semantic palette. Backgrounds stay neutral; saturated colors identify roles. */
+:root {
+  --color-white: #ffffff;
+  --color-canvas: #ffffff;
+  --color-surface: #f3f8f6;
+  --color-ink: #123f35;
+  --color-muted: #48685f;
+  --color-primary: #105b42;
+  --color-primary-hover: #0b4533;
+  --color-on-primary: #ffffff;
+  --color-leaf: #d7f26a;
+  --color-leaf-soft: #e8f6c7;
+  --color-sun: #ffd35b;
+  --color-sun-soft: #fff1be;
+  --color-tomato: #dc5136;
+  --color-tomato-soft: #ffe2da;
+  --color-error: #8a3021;
+  --color-info: #075e78;
+  --color-sky: #dff2f7;
+  --color-outline: #bcd1ca;
+}

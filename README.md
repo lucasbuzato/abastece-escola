@@ -1,10 +1,11 @@
 # Abastece Escola
 
-Do campo ao prato: coordenação do abastecimento escolar com agricultura familiar. Projeto acadêmico CitizenTech com **web de coordenação** e **app React Native/Expo** para produtores e escolas.
+Do campo ao prato: coordenação do abastecimento escolar com agricultura familiar. Projeto acadêmico CitizenTech com **site de apresentação**, **área de coordenação** e **app React Native/Expo** para produtores e escolas.
 
-- Web publicada: https://abastece-escola.toughazure1.chatgpt.site
-- App no navegador (mesmo código React Native): https://abastece-escola.toughazure1.chatgpt.site/app/
-- Repositório: https://github.com/lucasbuzatoalest/abastece-escola
+- Revisão atual, local: http://localhost:4180/
+- Área da coordenação: http://localhost:4180/coordenacao?view=overview
+- A publicação anterior não inclui esta revisão visual. Nenhuma publicação ou envio de código foi feito nesta revisão.
+- Repositório GitHub: não publicar nem enviar código, conforme orientação atual do usuário. O repositório criado anteriormente foi tornado privado; sua exclusão definitiva está bloqueada pela falta da permissão delete_repo na conexão atual.
 - Integrantes: **preencher nomes completos e RMs em ordem alfabética** (grupo de 2–5). Esses dados não foram fornecidos.
 - Relatório, vídeo-pitch e evidências: pasta `docs/entrega/` quando concluída; situação detalhada em `docs/entrega.txt`.
 
@@ -16,7 +17,7 @@ O cenário inicial é fictício: Rede do Vale, três escolas, dois fornecedores,
 
 ## Demonstração integrada, em duas janelas ou dispositivos
 
-1. Abra a web. Ela cria um ambiente isolado, persistido no servidor.
+1. Abra o site e entre em **Área da coordenação**. A coordenação cria um ambiente isolado, persistido no servidor.
 2. Use **Conectar aplicativo** e escolha Sítio Bom Jardim. Abra o convite ou cole-o no app Expo. Convites dão acesso somente ao perfil e ambiente indicados.
 3. No app, em **Colheita**, aumente cenoura de 40 para 50 kg. A web mostra a nova capacidade.
 4. Na web, em **Planejamento**, prepare uma revisão. A distribuição não substitui uma decisão de compra: é uma proposta operacional baseada nas capacidades do cenário.
@@ -69,15 +70,15 @@ No app, o último retrato pode ser consultado sem rede. Uma conferência cujo en
 
 ## Design, movimento e acessibilidade
 
-Identidade comum: verdes oliva, creme, acento lima, ilustrações SVG originais, linguagem de campo e escola. A web organiza decisões e comparação; o app concentra uma tarefa e grandes ações. As 48 referências, suas categorias, aplicações e limitações de inspeção estão em `docs/referencias.json`; a síntese em `docs/direcao-visual.txt`. Nenhuma imagem desses projetos integra o produto.
+A web usa Bricolage Grotesque nos títulos e Source Sans 3 no texto, fontes locais. Verde floresta, lima, amarelo de colheita, azul e terracota têm papéis distintos. Paisagem, curvas de cultivo e horta são SVGs próprios; a fotografia editorial tem crédito e licença. O app conserva a organização por tarefa, com a identidade anterior. A web organiza decisões e comparação; o app concentra uma tarefa e grandes ações. As 48 referências, suas categorias, aplicações e limitações de inspeção estão em `docs/referencias.json`; a síntese em `docs/direcao-visual.txt`. Nenhuma imagem desses projetos integra o produto.
 
-Motion: transições de navegação, entrada de confirmações, estados de proposta/entrega e conexões da rede. SVG de caminhão/colheita reforça a identidade. A web tem pausa de animações ambiente e respeita `prefers-reduced-motion`; o app observa a preferência de movimento reduzido do sistema. Movimento não é necessário para entender informação.
+Motion: GSAP/ScrollTrigger no site de apresentação e Motion na navegação da coordenação, com entrada de confirmações e estados de proposta/entrega. SVG de caminhão/colheita reforça a identidade. A web tem pausa de animações ambiente e respeita `prefers-reduced-motion`; o app observa a preferência de movimento reduzido do sistema. Movimento não é necessário para entender informação.
 
-HTML semântico, atalho ao conteúdo, foco visível, diálogos nativos, rótulos para ações e campos, status por texto e cor. O app usa propriedades de acessibilidade e botões de pelo menos 48 px nas ações principais. O texto nativo pode acompanhar a escala do sistema. Não declaramos certificação WCAG nem validação com leitor de tela em dispositivo real. Consulte os testes e limitações em `docs/verificacao.txt`.
+HTML semântico, atalho ao conteúdo, foco visível, diálogos nativos, rótulos para ações e campos, status por texto e cor. O app usa propriedades de acessibilidade e botões de pelo menos 48 px nas ações principais. O texto nativo pode acompanhar a escala do sistema. Não declaramos certificação WCAG nem validação com leitor de tela em dispositivo real. A auditoria da revisão atual, os problemas corrigidos e seus limites estão em `docs/auditoria-design.md`.
 
 ## Organização
 
-- `apps/web`: React, TypeScript, Vite, CSS, Motion e Lucide.
+- `apps/web`: React, TypeScript, Vite, CSS, GSAP, Motion e Lucide.
 - `apps/mobile`: React Native/Expo, SVG e AsyncStorage.
 - `packages/domain`: regras de negócio compartilhadas pelo serviço.
 - `server`: API e adaptador SQLite local.
