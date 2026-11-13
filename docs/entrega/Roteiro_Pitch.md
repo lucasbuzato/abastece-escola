@@ -1,12 +1,12 @@
 # Roteiro do pitch - Abastece Escola
 
-Lucas Busatto Venaruso - RM 562332
+Lucas Buzato Venarusso - RM 562332
 
 Duração planejada: 2min45s. Leia apenas os parágrafos de narração. Use o tempo de cada trecho como referência; as cenas poderão ser ajustadas ao áudio final. Grave com voz natural, sem ler os títulos e as instruções de tela. Uma faixa de áudio contínua funciona; arquivos separados por cena também funcionam.
 
 ## 00:00 a 00:18 - Problema e beneficiário
 
-Eu sou Lucas Busatto Venaruso, RM 562332. Este é o Abastece Escola. Quando a colheita muda, uma mesma informação precisa chegar a produtores, coordenação e escolas. O estudante depende desse trabalho conjunto para o abastecimento da alimentação escolar.
+Eu sou Lucas Buzato Venarusso, RM 562332. Este é o Abastece Escola. Quando a colheita muda, uma mesma informação precisa chegar a produtores, coordenação e escolas. O estudante depende desse trabalho conjunto para o abastecimento da alimentação escolar.
 
 **Imagem:** Página inicial do site: chamada, paisagem SVG e seção do problema.
 

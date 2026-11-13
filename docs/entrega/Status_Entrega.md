@@ -1,6 +1,6 @@
 # Situação da entrega
 
-Autor: Lucas Busatto Venaruso - RM 562332.
+Autor: Lucas Buzato Venarusso - RM 562332.
 
 - Banco: SQLite no desenvolvimento e Cloudflare D1 no serviço publicado. O enunciado exige integração, sem determinar banco específico.
 - GitHub: repositório público na conta pessoal `lucasbuzato/abastece-escola`.

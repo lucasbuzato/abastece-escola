@@ -1,6 +1,6 @@
 # Validação em campo - plano para executar
 
-Este é um plano de pesquisa, não um registro de entrevistas realizadas. O autor é Lucas Busatto Venaruso, RM 562332. Até esta entrega, o projeto foi verificado tecnicamente com dados fictícios; não houve participantes reais.
+Este é um plano de pesquisa, não um registro de entrevistas realizadas. O autor é Lucas Buzato Venarusso, RM 562332. Até esta entrega, o projeto foi verificado tecnicamente com dados fictícios; não houve participantes reais.
 
 ## Conversas com os participantes
 
