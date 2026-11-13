@@ -2,10 +2,10 @@
 
 Do campo ao prato: coordenação do abastecimento escolar com agricultura familiar. Projeto acadêmico CitizenTech com **site de apresentação**, **área de coordenação** e **app React Native/Expo** para produtores e escolas.
 
-- Revisão atual, local: http://localhost:4180/
-- Área da coordenação: http://localhost:4180/coordenacao?view=overview
-- A publicação anterior não inclui esta revisão visual. Nenhuma publicação ou envio de código foi feito nesta revisão.
-- Repositório GitHub: não publicar nem enviar código, conforme orientação atual do usuário. O repositório criado anteriormente foi tornado privado; sua exclusão definitiva está bloqueada pela falta da permissão delete_repo na conexão atual.
+- Site: https://abastece-escola.vercel.app
+- Coordenação: https://abastece-escola.vercel.app/coordenacao?view=overview
+- Repositório privado pessoal: https://github.com/lucasbuzato/abastece-escola
+- Vercel conectada ao repositório pessoal. A API persistente existente é encaminhada por /api; web e app usam os mesmos registros.
 - Integrantes: **preencher nomes completos e RMs em ordem alfabética** (grupo de 2–5). Esses dados não foram fornecidos.
 - Relatório, vídeo-pitch e evidências: pasta `docs/entrega/` quando concluída; situação detalhada em `docs/entrega.txt`.
 

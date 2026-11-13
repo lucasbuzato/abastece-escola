@@ -2,18 +2,21 @@
   "buildCommand": "npm run build:vercel",
   "outputDirectory": ".vercel-output",
   "framework": null,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/:path*",
-      "destination": "https://abastece-escola.toughazure1.chatgpt.site/api/:path*"
+      "src": "/api/(.*)",
+      "dest": "https://abastece-escola.toughazure1.chatgpt.site/api/$1"
     },
     {
-      "source": "/coordenacao",
-      "destination": "/index.html"
+      "handle": "filesystem"
     },
     {
-      "source": "/app/:path*",
-      "destination": "/app/index.html"
+      "src": "/app(?:/.*)?",
+      "dest": "/app/index.html"
+    },
+    {
+      "src": "/.*",
+      "dest": "/index.html"
     }
   ]
 }
