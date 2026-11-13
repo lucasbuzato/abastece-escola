@@ -10,7 +10,7 @@ Do campo ao prato: coordenação do abastecimento escolar com agricultura famili
 - Vercel conectada ao repositório pessoal. A API persistente existente é encaminhada por /api; web e app usam os mesmos registros.
 - Autor: **Lucas Busatto Venaruso - RM 562332**. Trabalho desenvolvido individualmente. O enunciado prevê grupos de 2 a 5 integrantes; a aceitação da entrega individual depende da instituição.
 - Documento: [Relatório em PDF](docs/entrega/Relatorio_Abastece_Escola.pdf).
-- Pitch: [roteiro e plano de cenas](docs/entrega/Roteiro_Pitch.md). As cenas serão montadas com a narração do autor. O vídeo final e seu link público dependem dessa etapa; não há publicação final de vídeo neste momento.
+- Pitch: [roteiro e plano de cenas](docs/entrega/Roteiro_Pitch.md). As cenas foram gravadas e organizadas em oito clipes; a montagem final aguarda a narração do autor. O vídeo final e seu link público dependem dessa etapa; não há publicação final de vídeo neste momento.
 
 ## O problema e os papéis
 
@@ -104,6 +104,6 @@ O enunciado exige compartilhamento real de dados entre as duas plataformas. Ele 
 
 ## Situação da entrega acadêmica
 
-O código, a web e a prévia Expo estão publicados. O PDF registra a implementação, jornadas, integração, decisões de design, motion, acessibilidade e ODS. O roteiro cobre um pitch de aproximadamente 2 minutos e 40 segundos. A gravação usa dados fictícios, com cenas reais da interface; não representa execução em aparelho físico.
+O código, a web e a prévia Expo estão publicados. O PDF registra a implementação, jornadas, integração, decisões de design, motion, acessibilidade e ODS. O roteiro cobre um pitch de aproximadamente 2 minutos e 45 segundos. A gravação usa dados fictícios, com cenas reais da interface; não representa execução em aparelho físico.
 
 A validação em campo, as entrevistas com produtores/equipes escolares, a execução em aparelho físico e a avaliação com leitor de tela ainda não foram realizadas. São limites declarados, não resultados presumidos. A entrega individual e a publicação final do vídeo precisam ser resolvidas antes de afirmar atendimento integral ao enunciado.
