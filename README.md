@@ -6,10 +6,11 @@ Do campo ao prato: coordenação do abastecimento escolar com agricultura famili
 - Aplicativo na Expo (Android/iOS, prévia SDK 57): https://expo.dev/accounts/ucas/projects/abastece-escola/updates/22cec39f-80a7-4660-8bf8-8fe14be72c13
 - Aplicativo no navegador: https://abastece-escola.vercel.app/app/
 - Coordenação: https://abastece-escola.vercel.app/coordenacao?view=overview
-- Repositório privado pessoal: https://github.com/lucasbuzato/abastece-escola
+- Repositório público pessoal: https://github.com/lucasbuzato/abastece-escola
 - Vercel conectada ao repositório pessoal. A API persistente existente é encaminhada por /api; web e app usam os mesmos registros.
-- Integrantes: **preencher nomes completos e RMs em ordem alfabética** (grupo de 2–5). Esses dados não foram fornecidos.
-- Relatório, vídeo-pitch e evidências: pasta `docs/entrega/` quando concluída; situação detalhada em `docs/entrega.txt`.
+- Autor: **Lucas Busatto Venaruso - RM 562332**. Trabalho desenvolvido individualmente. O enunciado prevê grupos de 2 a 5 integrantes; a aceitação da entrega individual depende da instituição.
+- Documento: [Relatório em PDF](docs/entrega/Relatorio_Abastece_Escola.pdf).
+- Pitch: [roteiro e plano de cenas](docs/entrega/Roteiro_Pitch.md). As cenas serão montadas com a narração do autor. O vídeo final e seu link público dependem dessa etapa; não há publicação final de vídeo neste momento.
 
 ## O problema e os papéis
 
@@ -96,3 +97,13 @@ HTML semântico, atalho ao conteúdo, foco visível, diálogos nativos, rótulos
 ODS 2 (Fome Zero e Agricultura Sustentável): visibilidade do abastecimento escolar e participação de fornecedores locais. ODS 12 (Consumo e Produção Responsáveis): registrar diferença entre previsto, recebido, aceito e rejeitado ajuda a investigar perdas. O protótipo não comprova redução da fome/desperdício e não determina qualidade sanitária, cardápios, elegibilidade de fornecedores ou decisões de contratação pública.
 
 A revisão do aplicativo, os testes de integração pela interface e os limites da verificação estão em `docs/aplicativo-publicacao.md`.
+
+## Banco de dados e exigência do desafio
+
+O enunciado exige compartilhamento real de dados entre as duas plataformas. Ele aceita backend próprio, API, Firebase, Supabase ou similar; não determina um banco específico. Este projeto usa banco relacional: SQLite no desenvolvimento e Cloudflare D1 no serviço publicado. As tabelas `rooms` e `sessions` persistem o estado de cada demonstração e os acessos por perfil. A web na Vercel encaminha `/api/` para esse serviço persistente; o banco não é um arquivo temporário dentro da Vercel. Dados iniciais fictícios não significam que a integração é simulada.
+
+## Situação da entrega acadêmica
+
+O código, a web e a prévia Expo estão publicados. O PDF registra a implementação, jornadas, integração, decisões de design, motion, acessibilidade e ODS. O roteiro cobre um pitch de aproximadamente 2 minutos e 40 segundos. A gravação usa dados fictícios, com cenas reais da interface; não representa execução em aparelho físico.
+
+A validação em campo, as entrevistas com produtores/equipes escolares, a execução em aparelho físico e a avaliação com leitor de tela ainda não foram realizadas. São limites declarados, não resultados presumidos. A entrega individual e a publicação final do vídeo precisam ser resolvidas antes de afirmar atendimento integral ao enunciado.
