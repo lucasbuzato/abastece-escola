@@ -104,6 +104,6 @@ O enunciado exige compartilhamento real de dados entre as duas plataformas. Ele 
 
 ## Situação da entrega acadêmica
 
-O código, a web e a prévia Expo estão publicados. O PDF registra a implementação, jornadas, integração, decisões de design, motion, acessibilidade e ODS. O roteiro cobre um pitch de aproximadamente 2 minutos e 45 segundos. A gravação usa dados fictícios, com cenas reais da interface; não representa execução em aparelho físico.
+O código, a web e a prévia Expo estão publicados. O PDF registra a implementação, jornadas, integração, decisões de design, motion, acessibilidade e ODS. O roteiro cobre um pitch de aproximadamente 3 minutos (2min57s). A gravação usa dados fictícios, com cenas reais da interface; não representa execução em aparelho físico.
 
 A validação em campo, as entrevistas com produtores/equipes escolares, a execução em aparelho físico e a avaliação com leitor de tela ainda não foram realizadas. São limites declarados, não resultados presumidos. A entrega individual e a publicação final do vídeo precisam ser resolvidas antes de afirmar atendimento integral ao enunciado.

@@ -2,56 +2,58 @@
 
 Lucas Buzato Venarusso - RM 562332
 
-Duração planejada: 2min45s. Leia apenas os parágrafos de narração. Use o tempo de cada trecho como referência; as cenas poderão ser ajustadas ao áudio final. Grave com voz natural, sem ler os títulos e as instruções de tela. Uma faixa de áudio contínua funciona; arquivos separados por cena também funcionam.
+Versão revisada: primeiro explica o produto, os participantes e o problema; depois demonstra como funciona. Duração planejada: 2min57s.
 
-## 00:00 a 00:18 - Problema e beneficiário
+Leia apenas os parágrafos de narração. Os títulos e as instruções de imagem não são falados. Grave com voz natural; a montagem será ajustada ao seu áudio. Pode enviar uma gravação contínua ou um arquivo por cena.
 
-Eu sou Lucas Buzato Venarusso, RM 562332. Este é o Abastece Escola. Quando a colheita muda, uma mesma informação precisa chegar a produtores, coordenação e escolas. O estudante depende desse trabalho conjunto para o abastecimento da alimentação escolar.
+## 00:00 a 00:27 - O que é o Abastece Escola
 
-**Imagem:** Página inicial do site: chamada, paisagem SVG e seção do problema.
+O Abastece Escola é um sistema para planejar entregas de alimentos e conferir o que chega às escolas. Ele conecta produtores da agricultura familiar, coordenação e equipes escolares por um aplicativo e uma plataforma web. Cada participante registra sua parte do trabalho, e os demais acompanham a mesma informação. O estudante é o beneficiário desse abastecimento mais organizado.
 
-## 00:18 a 00:36 - Por que duas plataformas
+**Imagem:** Abrir com uma explicação visual do sistema e dos três participantes. Depois, mostrar o site e o app do produtor.
 
-A proposta divide os papéis. No aplicativo, o produtor informa sua capacidade e registra a saída. A escola confere o recebimento. Na plataforma web, a coordenação distribui quantidades e acompanha a rede. Todos usam os mesmos registros. Esta demonstração tem dados fictícios.
+## 00:27 a 00:49 - Qual problema ele resolve
 
-**Imagem:** Site apresenta os três participantes; mostrar início do app do produtor e visão geral da coordenação.
+Imagine três escolas que precisam receber setenta quilos de cenoura, mas os produtores só conseguem entregar sessenta. A coordenação precisa revisar compromissos, reorganizar destinos e avisar todos os envolvidos. Se cada pessoa guardar uma versão diferente, a falta pode aparecer só na entrega. O sistema organiza esse acompanhamento. Os dados desta demonstração são fictícios.
 
-## 00:36 a 00:57 - Uma ação aparece na outra plataforma
+**Imagem:** Mostrar a rede escolar e a simulação: 70 kg necessários, 60 kg disponíveis. Destacar que a mudança afeta vários participantes.
 
-Aqui, o produtor altera a capacidade de cenoura de quarenta para cinquenta quilos. A informação aparece na coordenação, que passa a contar com setenta quilos disponíveis na rede. Isso funciona por uma API compartilhada e um banco persistente: SQLite no desenvolvimento e Cloudflare D1 na versão publicada.
+## 00:49 a 01:10 - Como a informação circula
 
-**Imagem:** App: Colheita, cenoura 40 kg, editar para 50 e confirmar. Em seguida, planejamento web mostra capacidade total de 70 kg.
+O produtor começa no app, confirmando quanto consegue fornecer. Aqui, ele muda a cenoura de quarenta para cinquenta quilos. A web passa a mostrar setenta quilos disponíveis na rede. Uma API conecta as duas plataformas ao mesmo banco de dados, para que a mudança fique registrada e seja compartilhada.
 
-## 00:57 a 01:21 - Planejamento e concordância
+**Imagem:** Produtor altera capacidade de cenoura de 40 para 50 kg no app; a web passa a mostrar 70 kg disponíveis na rede.
 
-A coordenação prepara uma revisão da distribuição. Os dois produtores conferem destinos e quantidades e confirmam a mesma versão no app. Só depois o plano é publicado. As regras impedem publicação sem capacidade suficiente ou sem os aceites necessários. As agendas acompanham a versão combinada.
+## 01:10 a 01:34 - Como o plano é combinado
 
-**Imagem:** Web: preparar revisão; app dos dois produtores: conferir e aceitar proposta; web: publicar plano.
+Com essa informação, a coordenação prepara uma nova distribuição. Cada produtor confere suas quantidades e os destinos no aplicativo e confirma a proposta. Só depois o plano é publicado para as escolas. As regras impedem publicar sem capacidade suficiente ou sem os aceites necessários para aquela versão.
 
-## 01:21 a 01:45 - Saída, recebimento e resultado
+**Imagem:** Coordenação prepara revisão; os dois produtores conferem e aceitam no app; a coordenação publica a versão combinada.
 
-O produtor registra a saída e a escola passa a ver a entrega a caminho. Nesta conferência, eram trinta quilos previstos, vinte e nove recebidos e um rejeitado com justificativa. O sistema calcula vinte e oito quilos aceitos. A coordenação vê os valores no relatório e pode tratar a divergência.
+## 01:34 a 01:59 - O que chegou à escola
 
-**Imagem:** Produtor registra saída; escola recebe situação A caminho, informa 29 kg recebidos, 1 kg rejeitado e motivo; relatório web mostra 28 kg aceitos.
+Na entrega, o produtor registra a saída. A escola acompanha a chegada e informa o que recebeu. Neste exemplo, eram trinta quilos previstos, vinte e nove recebidos e um rejeitado, com justificativa. O sistema calcula vinte e oito quilos aceitos. A coordenação vê os valores no relatório e pode investigar a diferença.
 
-## 01:45 a 02:03 - Conexão instável
+**Imagem:** Saída no app do produtor; conferência no app da escola: 29 kg recebidos e 1 kg rejeitado, com motivo. Relatório web mostra 28 kg aceitos.
 
-Se a conexão falhar, a conferência fica marcada como pendente no aparelho. Ela só aparece para a coordenação depois do envio. Neste teste, a recuperação da conexão permitiu sincronizar vinte e quatro quilos de banana sem duplicação. O total aceito passou para cinquenta e dois quilos.
+## 01:59 a 02:17 - E se faltar internet
 
-**Imagem:** App da escola salva uma conferência de banana sem conexão, mostra Pendente e envia depois; relatório passa a 52 kg aceitos.
+Sem internet, a escola consegue guardar a conferência como pendente no aparelho. Ela só aparece para a coordenação depois do envio. Neste teste, a recuperação da conexão permitiu sincronizar vinte e quatro quilos de banana sem duplicação. O total aceito passou para cinquenta e dois quilos.
 
-## 02:03 a 02:27 - Design, movimento e acessibilidade
+**Imagem:** A escola salva uma conferência de banana sem conexão. Mostrar Pendente, recuperar o serviço e sincronizar. O relatório passa a 52 kg aceitos.
 
-A identidade visual é comum, com tipografia legível, cores por função e ilustrações próprias. O movimento orienta transições e confirmações, com respeito à preferência de movimento reduzido. Status têm texto além da cor, campos têm rótulos e as ações têm áreas de toque confortáveis. A web também oferece navegação por teclado e foco visível.
+## 02:17 a 02:39 - Como o design ajuda no uso
 
-**Imagem:** Transição entre abas do app, retorno da confirmação, status por texto; web com foco visível e controle de pausa; seção ODS.
+A identidade visual é comum ao app e à web. Transições ajudam a acompanhar etapas, e mensagens confirmam os envios. Status têm texto além da cor, campos têm rótulos e as ações têm áreas de toque confortáveis. A web funciona pelo teclado, e o movimento pode ser reduzido ou pausado.
 
-## 02:27 a 02:45 - Contribuição e próximos passos
+**Imagem:** Mostrar navegação do app, confirmação de envio, foco pelo teclado na web e botão de pausa de movimento.
 
-O projeto se relaciona aos ODS dois e doze, pelo abastecimento escolar e pelo registro de diferenças e perdas. Esses efeitos ainda precisam ser medidos em campo. O próximo passo é validar com pessoas reais. O código, o site e a prévia Expo estão disponíveis nos links do projeto.
+## 02:39 a 02:57 - Por que isso importa
 
-**Imagem:** Seção ODS e encerramento com links do site, Expo e GitHub.
+A proposta se relaciona aos ODS dois e doze: abastecimento escolar e acompanhamento de perdas. O impacto ainda precisa ser medido em campo com usuários reais. Sou Lucas Buzato Venarusso. O código, o site e a demonstração estão disponíveis nos links da apresentação.
 
-## Montagem após a narração
+**Imagem:** Mostrar os ODS e encerrar com nome do autor, RM e links do projeto.
 
-As cenas capturam a interface funcionando. A versão mobile é a execução React Native Web do mesmo aplicativo; não é gravação de aparelho físico. As duas plataformas usam o mesmo ambiente de dados fictícios. O áudio do autor será sincronizado na montagem final. Não há entrevistas nem resultados de impacto medidos em campo.
+## Nota sobre as cenas
+
+A montagem combina explicações visuais com capturas reais do app e da web. A versão mobile aparece em React Native Web, com o mesmo código do aplicativo Expo. Não é gravação de aparelho físico. Os participantes usam o mesmo ambiente de dados fictícios. Não houve entrevistas nem medição de impacto com usuários reais.
