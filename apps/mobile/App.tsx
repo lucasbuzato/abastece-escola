@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
-  Text,
+  Text as NativeText,
   ScrollView,
   Pressable,
   TextInput,
@@ -17,17 +17,18 @@ import {
   KeyboardAvoidingView,
   useWindowDimensions,
 } from "react-native";
+import { useFonts } from "expo-font";
 import { StatusBar } from "expo-status-bar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Svg, { Path, Circle, Rect, Line, G } from "react-native-svg";
 type Session = { room: string; token: string; invites?: any[]; base: string };
 const C = {
-  green: "#244734",
-  text: "#29432f",
-  muted: "#52683f",
-  bg: "#f5f6ee",
-  lime: "#d8e9ac",
-  line: "#e0e6d5",
+  green: "#105B42",
+  text: "#123F35",
+  muted: "#48685F",
+  bg: "#F3F8F6",
+  lime: "#D7F26A",
+  line: "#BCD1CA",
   amber: "#8c6928",
 };
 const fmt = (n: number) =>
@@ -85,7 +86,9 @@ function Icon({
       strokeWidth={1.6}
       strokeLinecap="round"
       strokeLinejoin="round"
-      accessibilityElementsHidden
+      {...(Platform.OS !== "web"
+        ? { accessibilityElementsHidden: true }
+        : { "aria-hidden": true })}
     >
       <Path d={paths[name] || paths.leaf} />
     </Svg>
@@ -95,48 +98,72 @@ function Garden() {
   return (
     <Svg
       width="100%"
-      height={160}
-      viewBox="0 0 400 160"
-      accessibilityElementsHidden
+      height={175}
+      viewBox="0 0 400 200"
+      {...(Platform.OS !== "web"
+        ? { accessibilityElementsHidden: true }
+        : { "aria-hidden": true })}
     >
-      <Circle cx="318" cy="41" r="30" fill="#D9E8A8" />
-      <Path d="M-30 140Q90 20 260 111T440 77V200H-30Z" fill="#A9BD7D" />
-      <Path d="M-30 175Q130 65 295 135T450 94V200H-30Z" fill="#6C8A51" />
+      <Rect width={400} height={200} fill="#DFF2F7" />
+      <Circle cx={330} cy={37} r={24} fill="#FFD35B" />
+      <Path d="M0 98Q80 32 178 92T400 72V200H0Z" fill="#A8D195" />
+      <Path d="M0 132Q105 62 215 121T400 108V200H0Z" fill="#66A77B" />
+      <Path d="M0 177Q100 118 205 161T400 145V200H0Z" fill="#286C50" />
       <Path
-        d="M150 160q100-48 240-15"
-        stroke="#e1e7c5"
-        strokeWidth={18}
+        d="M72 127L80 149M327 129L329 154"
+        stroke="#D5E2E7"
+        strokeWidth={11}
+      />
+      <Path
+        d="M-10 176C75 140 142 147 216 163S330 176 415 134"
+        stroke="#D5E2E7"
+        strokeWidth={33}
         fill="none"
       />
-      <G x={267} y={63}>
-        <Path d="M0 55V13L23-3l24 16v42Z" fill="#f8f4e4" />
+      <Path
+        d="M-10 176C75 140 142 147 216 163S330 176 415 134"
+        stroke="#FFFFFF"
+        strokeWidth={1.5}
+        strokeDasharray="7 9"
+        fill="none"
+      />
+      <G x={35} y={63}>
+        <Path d="M0 25L35 0L70 25V68H0Z" fill="#DC5136" />
         <Path
-          d="m-5 14 28-21 29 21"
-          stroke="#244734"
-          strokeWidth={3}
+          d="M-5 25L35-3L75 25"
           fill="none"
+          stroke="#8A3021"
+          strokeWidth={6}
         />
-        <Path d="M18 55V32h11v23" fill="#244734" />
-        <Rect x={6} y={23} width={7} height={9} fill="#91aa71" />
-        <Rect x={34} y={23} width={7} height={9} fill="#91aa71" />
+        <Rect x={27} y={37} width={20} height={31} fill="#FFFFFF" />
+        <Path d="M37 37V68M27 50H47" stroke="#8A3021" strokeWidth={1.5} />
+        <Rect x={9} y={35} width={11} height={13} fill="#FFD35B" />
       </G>
-      <G x={95} y={57}>
+      <G x={294} y={65}>
+        <Path d="M0 22L32 3L64 22V67H0Z" fill="#FFFFFF" />
         <Path
-          d="M0 66V15M0 42C-23 42-21 19-21 19S0 19 0 42M0 26C19 26 21 5 21 5S0 5 0 26"
-          fill="#244734"
-          stroke="#244734"
-          strokeWidth={1.5}
+          d="M-4 22L32 0L68 22"
+          fill="none"
+          stroke="#075E78"
+          strokeWidth={6}
         />
+        <Rect x={25} y={43} width={15} height={24} fill="#075E78" />
+        <Path d="M8 31H18V42H8ZM47 31H57V42H47Z" fill="#7CC4D5" />
+        <Circle cx={32} cy={29} r={7} fill="#DFF2F7" />
+        <Path d="M32 24V29L36 31" stroke="#075E78" strokeWidth={1.5} />
       </G>
-      <G x={180} y={116}>
-        <Path
-          d="M0 0h31v20H0Zm31 7h11l9 9v4H31Z"
-          fill="#eee5ca"
-          stroke="#244734"
-          strokeWidth={1.4}
-        />
-        <Circle cx={8} cy={21} r={4} fill="#244734" />
-        <Circle cx={41} cy={21} r={4} fill="#244734" />
+      <G x={186} y={148}>
+        <Path d="M0 0H35V19H0ZM35 6H46L56 16V19H35Z" fill="#075E78" />
+        <Path d="M39 9H45L51 15H39Z" fill="#DFF2F7" />
+        <Path d="M2 17H55" stroke="#FFD35B" strokeWidth={2} />
+        <Circle cx={10} cy={20} r={5} fill="#123F35" />
+        <Circle cx={46} cy={20} r={5} fill="#123F35" />
+        <Circle cx={10} cy={20} r={2} fill="#FFFFFF" />
+        <Circle cx={46} cy={20} r={2} fill="#FFFFFF" />
+      </G>
+      <G stroke="#123F35" strokeWidth={1.5} fill="#D7F26A">
+        <Path d="M128 138V97M128 124C108 123 107 105 107 105C124 104 128 114 128 124ZM128 113C145 111 147 93 147 93C129 96 128 104 128 113Z" />
+        <Path d="M28 192V178M28 184C17 184 16 174 16 174C25 174 28 178 28 184ZM28 184C38 181 41 173 41 173C31 174 28 177 28 184Z" />
       </G>
     </Svg>
   );
@@ -174,7 +201,46 @@ function Btn({
     </Pressable>
   );
 }
+function Text({ style, ...props }: React.ComponentProps<typeof NativeText>) {
+  const flat = StyleSheet.flatten(style) || {};
+  const family =
+    flat.fontFamily ||
+    (Number(flat.fontWeight || 400) >= 500
+      ? "SourceSemiBold"
+      : "SourceRegular");
+  return (
+    <NativeText
+      {...props}
+      style={[
+        { fontFamily: family, color: C.text },
+        style,
+        { fontFamily: family, fontWeight: "normal" },
+      ]}
+    />
+  );
+}
 export default function App() {
+  const [loaded, error] = useFonts({
+    Bricolage: require("@expo-google-fonts/bricolage-grotesque/600SemiBold/BricolageGrotesque_600SemiBold.ttf"),
+    SourceRegular: require("@expo-google-fonts/source-sans-3/400Regular/SourceSans3_400Regular.ttf"),
+    SourceSemiBold: require("@expo-google-fonts/source-sans-3/600SemiBold/SourceSans3_600SemiBold.ttf"),
+  });
+  if (!loaded && !error)
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: C.bg,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator color={C.green} />
+      </View>
+    );
+  return <Application />;
+}
+function Application() {
   const [session, setSession] = useState<Session | null>(null),
     [snap, setSnap] = useState<any>(null),
     [tab, setTab] = useState("home"),
@@ -257,7 +323,7 @@ export default function App() {
     Animated.timing(fade, {
       toValue: 1,
       duration: 240,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== "web",
     }).start();
   }, [tab, reduce]);
   useEffect(() => {
@@ -274,6 +340,12 @@ export default function App() {
       });
       const b = await r.json();
       if (!r.ok) throw Object.assign(Error(b.error), { status: r.status });
+      if (
+        current.current.session?.room !== se.room ||
+        current.current.session?.token !== se.token
+      )
+        return;
+      if (current.current.snap?.revision > b.revision) return;
       setSnap(b);
       setOnline(true);
       await AsyncStorage.setItem(
@@ -423,8 +495,8 @@ export default function App() {
   };
   const heroTitle =
     snap?.actor.role === "supplier"
-      ? "Quem cultiva,\nconecta."
-      : "Receber bem\né alimentar.";
+      ? "Sua próxima\nentrega."
+      : "Confira o que\nchegou.";
   const isSupplier = snap?.actor.role === "supplier";
   const s = snap?.state;
   const supplier = s?.suppliers.find((p: any) => p.id === snap.actor.id);
@@ -437,7 +509,7 @@ export default function App() {
     s?.plan.status === "draft" &&
     s?.plan.accepts[snap.actor.id] !== s?.plan.version;
   const ownUrl = (actor: any) =>
-    `${session!.base}${actor.role === "coordinator" ? "/" : "/app/"}?room=${session!.room}#access=${actor.token}`;
+    `${session!.base}${actor.role === "coordinator" ? "/coordenacao" : "/app/"}?room=${session!.room}#access=${actor.token}`;
   const openDelivery = (d: any) => {
     setSelected(d);
     setValue(String(d.qty));
@@ -470,25 +542,21 @@ export default function App() {
             <Garden />
           </View>
           <Text accessibilityRole="header" style={st.welcomeTitle}>
-            O campo e a escola,{"\n"}
-            <Text style={{ fontStyle: "italic", color: "#52683f" }}>
-              mais próximos.
-            </Text>
+            Sua entrega, do plano à escola.
           </Text>
           <Text style={st.welcomeText}>
-            Confirme sua colheita, acompanhe as entregas e faça parte de uma
-            rede que alimenta.
+            Produtores confirmam quantidades e registram saídas. Escolas
+            conferem o que chegou. Os registros aparecem na coordenação.
           </Text>
           <View style={st.welcomeBox}>
-            <Text style={st.label}>SEU PRÓXIMO PASSO</Text>
             <Text style={st.welcomeBoxTitle}>Recebeu um convite?</Text>
             <TextInput
               accessibilityLabel="Convite de acesso"
               placeholder="Cole aqui o convite da coordenação"
-              placeholderTextColor="#819074"
               value={inviteInput}
               onChangeText={setInviteInput}
               autoCapitalize="none"
+              placeholderTextColor={C.muted}
               style={st.input}
             />
             <Btn label="Entrar com convite" onPress={openInvite} />
@@ -515,7 +583,7 @@ export default function App() {
             </Text>
           ) : null}
           <Text style={st.welcomeFooter}>
-            PROJETO ACADÊMICO · DADOS FICTÍCIOS
+            Projeto acadêmico · dados fictícios
           </Text>
         </ScrollView>
       </View>
@@ -555,7 +623,7 @@ export default function App() {
               ? "Conectado à Rede do Vale"
               : "Sem conexão · dados da última atualização"}
           </Text>
-          <Text style={st.cycleSmall}>CICLO 24</Text>
+          <Text style={st.cycleSmall}>Ciclo 24</Text>
         </View>
         <ScrollView
           style={{ flex: 1 }}
@@ -620,18 +688,16 @@ export default function App() {
                   {isSupplier
                     ? supplier?.person.split(" ")[0]
                     : "equipe da escola"}{" "}
-                  <Text style={{ color: "#8fa36e" }}>☀</Text>
                 </Text>
                 <View style={st.hero}>
                   <View style={st.heroText}>
-                    <Text style={st.label}>DO CAMPO AO PRATO</Text>
                     <Text accessibilityRole="header" style={st.heroTitle}>
                       {heroTitle}
                     </Text>
                     <Text style={st.heroSubtitle}>
                       {isSupplier
-                        ? "Cada compromisso seu faz\ndiferença na mesa da escola."
-                        : "Cada conferência cuida do\nalimento que chega à mesa."}
+                        ? "Informe sua capacidade e acompanhe os compromissos com as escolas."
+                        : "Compare o previsto com o recebido e registre as diferenças."}
                     </Text>
                   </View>
                   <View style={st.garden}>
@@ -688,14 +754,28 @@ export default function App() {
                     <Icon name="arrow" size={15} />
                   </Pressable>
                 </View>
-                {list.slice(0, 3).map((d: any) => delivery(d))}
+                {list
+                  .filter((d: any) => d.status !== "received")
+                  .slice(0, 3)
+                  .map((d: any) => delivery(d))}
+                {list.every((d: any) => d.status === "received") && (
+                  <View style={st.tip}>
+                    <Icon name="check" />
+                    <Text style={st.tipText}>
+                      Todas as entregas foram conferidas. Consulte o histórico
+                      para ver os registros.
+                    </Text>
+                  </View>
+                )}
                 <View style={st.communityCard}>
                   <Icon name="leaf" size={24} />
                   <View style={{ flex: 1 }}>
-                    <Text style={st.communityTitle}>O alimento aproxima.</Text>
+                    <Text style={st.communityTitle}>
+                      O mesmo plano na coordenação
+                    </Text>
                     <Text style={st.communityText}>
-                      Você faz parte de uma rede de produtores e escolas que
-                      trabalham juntos.
+                      As quantidades confirmadas e os recebimentos ficam
+                      disponíveis para quem organiza este ciclo.
                     </Text>
                   </View>
                 </View>
@@ -703,7 +783,6 @@ export default function App() {
             )}
             {tab === "deliveries" && (
               <>
-                <Text style={st.label}>UM COMPROMISSO DE CADA VEZ</Text>
                 <Text accessibilityRole="header" style={st.pageTitle}>
                   Suas entregas
                 </Text>
@@ -715,7 +794,6 @@ export default function App() {
             )}
             {tab === "capacity" && isSupplier && (
               <>
-                <Text style={st.label}>DA NOSSA TERRA</Text>
                 <Text accessibilityRole="header" style={st.pageTitle}>
                   Sua colheita
                 </Text>
@@ -731,14 +809,14 @@ export default function App() {
                           st.foodIcon,
                           {
                             backgroundColor:
-                              c.product === "banana" ? "#f2efd4" : "#f7e4d0",
+                              c.product === "banana" ? "#FFF1BE" : "#FFE2DA",
                           },
                         ]}
                       >
                         <Icon
                           name={c.product === "banana" ? "banana" : "carrot"}
                           size={25}
-                          color={c.product === "banana" ? "#857f37" : "#a46e3e"}
+                          color={c.product === "banana" ? "#795015" : "#8A3021"}
                         />
                       </View>
                       <Text style={st.capacityTitle}>
@@ -786,7 +864,6 @@ export default function App() {
             )}
             {tab === "history" && (
               <>
-                <Text style={st.label}>TUDO FICA REGISTRADO</Text>
                 <Text accessibilityRole="header" style={st.pageTitle}>
                   Seu histórico
                 </Text>
@@ -815,7 +892,6 @@ export default function App() {
             )}
             {tab === "account" && (
               <>
-                <Text style={st.label}>GENTE QUE FAZ ACONTECER</Text>
                 <Text accessibilityRole="header" style={st.pageTitle}>
                   Seu acesso
                 </Text>
@@ -888,6 +964,7 @@ export default function App() {
                   onChangeText={setInviteInput}
                   placeholder="Cole o convite completo"
                   autoCapitalize="none"
+                  placeholderTextColor={C.muted}
                   style={st.input}
                 />
                 <Btn
@@ -917,7 +994,7 @@ export default function App() {
             )}
           </Animated.View>
           <Text style={st.footer}>
-            FEITO DE CONEXÕES. CULTIVADO EM COMUNIDADE.
+            Demonstração acadêmica · dados fictícios
           </Text>
         </ScrollView>
         <View style={st.bottomNav}>
@@ -950,7 +1027,7 @@ export default function App() {
                 <Icon
                   name={icon}
                   size={21}
-                  color={tab === id ? C.green : "#829273"}
+                  color={tab === id ? C.green : "#48685F"}
                 />
               </View>
               <Text style={[st.navText, tab === id && st.navTextActive]}>
@@ -959,7 +1036,7 @@ export default function App() {
             </Pressable>
           ))}
         </View>
-        {toast && (
+        {!!toast && (
           <View style={st.toast} accessibilityLiveRegion="polite">
             <Icon name="check" size={19} color={C.lime} />
             <Text style={st.toastText}>{toast}</Text>
@@ -967,7 +1044,13 @@ export default function App() {
               accessibilityRole="button"
               accessibilityLabel="Fechar confirmação"
               onPress={() => setToast("")}
-              style={{ padding: 6 }}
+              style={{
+                padding: 6,
+                minWidth: 44,
+                minHeight: 44,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
               <Icon name="close" size={17} color={C.lime} />
             </Pressable>
@@ -1177,6 +1260,7 @@ export default function App() {
                           keyboardType="decimal-pad"
                           value={value}
                           onChangeText={setValue}
+                          placeholderTextColor={C.muted}
                           style={st.input}
                         />
                         <Text style={st.fieldLabel}>
@@ -1187,6 +1271,7 @@ export default function App() {
                           keyboardType="decimal-pad"
                           value={reject}
                           onChangeText={setReject}
+                          placeholderTextColor={C.muted}
                           style={st.input}
                         />
                         <Text style={st.fieldLabel}>Motivo ou observação</Text>
@@ -1201,6 +1286,20 @@ export default function App() {
                             { minHeight: 75, textAlignVertical: "top" },
                           ]}
                         />
+                        <View style={st.tip}>
+                          <Icon name="check" />
+                          <Text style={st.tipText}>
+                            Aceito:{" "}
+                            {fmt(
+                              Math.max(
+                                0,
+                                Number(value.replace(",", ".")) -
+                                  Number(reject.replace(",", ".")),
+                              ) || 0,
+                            )}{" "}
+                            kg. Rejeitado: {reject || "0"} kg.
+                          </Text>
+                        </View>
                         <Text style={st.inputHelp}>
                           A coordenação verá o que foi aceito. Sem conexão, a
                           anotação ficará pendente neste aparelho.
@@ -1275,14 +1374,14 @@ export default function App() {
             style={[
               st.foodIcon,
               {
-                backgroundColor: d.product === "banana" ? "#f1efd7" : "#f7e9d9",
+                backgroundColor: d.product === "banana" ? "#FFF1BE" : "#FFE2DA",
               },
             ]}
           >
             <Icon
               name={d.product === "banana" ? "banana" : "carrot"}
               size={22}
-              color={d.product === "banana" ? "#8b853d" : "#aa7746"}
+              color={d.product === "banana" ? "#795015" : "#8A3021"}
             />
           </View>
           <View style={{ flex: 1 }}>
@@ -1334,12 +1433,8 @@ export default function App() {
     );
   }
 }
-const serif = Platform.select({
-  ios: "Georgia",
-  android: "serif",
-  web: "Georgia",
-});
-const st = StyleSheet.create({
+const serif = "Bricolage";
+const baseStyles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.bg },
   center: {
     flex: 1,
@@ -1370,7 +1465,7 @@ const st = StyleSheet.create({
     color: C.green,
   },
   logoSub: {
-    fontSize: 12,
+    fontSize: 14,
     letterSpacing: 4.6,
     color: C.green,
     marginTop: 1,
@@ -1380,11 +1475,11 @@ const st = StyleSheet.create({
     width: 41,
     height: 41,
     borderRadius: 30,
-    backgroundColor: "#e2e8cf",
+    backgroundColor: "#D7F26A",
     alignItems: "center",
     justifyContent: "center",
   },
-  profileText: { fontSize: 12, fontWeight: "600", color: "#52683f" },
+  profileText: { fontSize: 14, fontWeight: "600", color: "#48685F" },
   connectionBar: {
     marginHorizontal: 25,
     flexDirection: "row",
@@ -1400,12 +1495,12 @@ const st = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: "#799f56",
   },
-  connectionText: { fontSize: 12, color: "#5d7052", flex: 1 },
-  cycleSmall: { fontSize: 12, letterSpacing: 1.1, color: "#5d7052" },
+  connectionText: { fontSize: 14, color: "#48685F", flex: 1 },
+  cycleSmall: { fontSize: 14, letterSpacing: 1.1, color: "#48685F" },
   content: { paddingHorizontal: 25, paddingTop: 22, paddingBottom: 20 },
   greeting: {
     fontSize: 15,
-    color: "#52664a",
+    color: "#48685F",
     fontWeight: "500",
     marginBottom: 19,
   },
@@ -1414,17 +1509,17 @@ const st = StyleSheet.create({
     padding: 22,
     paddingBottom: 100,
     borderRadius: 15,
-    backgroundColor: "#e9eed8",
+    backgroundColor: "#E8F6C7",
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: "#e0e7cf",
+    borderColor: "#BCD1CA",
   },
   heroText: { zIndex: 1 },
   label: {
-    fontSize: 12,
+    fontSize: 14,
     letterSpacing: 1.8,
     fontWeight: "600",
-    color: "#52683f",
+    color: "#48685F",
     marginBottom: 10,
   },
   heroTitle: {
@@ -1435,9 +1530,9 @@ const st = StyleSheet.create({
     letterSpacing: -1.2,
   },
   heroSubtitle: {
-    fontSize: 12,
-    lineHeight: 17,
-    color: "#52683f",
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#48685F",
     marginTop: 12,
   },
   garden: {
@@ -1467,11 +1562,11 @@ const st = StyleSheet.create({
   },
   numberUnit: {
     fontSize: 13,
-    color: "#5d7052",
+    color: "#48685F",
     fontWeight: "400",
     letterSpacing: 0,
   },
-  miniLabel: { fontSize: 12, color: "#5d7052", marginTop: 5 },
+  miniLabel: { fontSize: 14, color: "#48685F", marginTop: 5 },
   statDivider: { width: 1, backgroundColor: C.line, marginVertical: 4 },
   sectionHeading: {
     flexDirection: "row",
@@ -1491,7 +1586,7 @@ const st = StyleSheet.create({
     alignItems: "center",
     gap: 5,
   },
-  smallLink: { fontSize: 12, color: "#536e40", fontWeight: "500" },
+  smallLink: { fontSize: 14, color: "#105B42", fontWeight: "500" },
   deliveryCard: {
     backgroundColor: "white",
     borderWidth: 1,
@@ -1509,7 +1604,7 @@ const st = StyleSheet.create({
     justifyContent: "center",
   },
   deliveryProduct: { fontSize: 14, fontWeight: "500", color: C.green },
-  deliveryMeta: { fontSize: 12, color: "#5d7052", marginTop: 5 },
+  deliveryMeta: { fontSize: 14, color: "#48685F", marginTop: 5 },
   deliveryQty: {
     fontSize: 22,
     color: C.green,
@@ -1517,9 +1612,9 @@ const st = StyleSheet.create({
     letterSpacing: -0.7,
   },
   qtyUnit: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "400",
-    color: "#5d7052",
+    color: "#48685F",
     letterSpacing: 0,
   },
   deliveryBottom: {
@@ -1527,18 +1622,18 @@ const st = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     borderTopWidth: 1,
-    borderTopColor: "#edf0e4",
+    borderTopColor: "#BCD1CA",
     paddingTop: 12,
     marginTop: 14,
   },
-  deliveryTime: { fontSize: 12, color: "#5d7052" },
+  deliveryTime: { fontSize: 14, color: "#48685F" },
   status: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
     paddingHorizontal: 8,
     paddingVertical: 5,
-    backgroundColor: "#f4efdf",
+    backgroundColor: "#FFF1BE",
     borderRadius: 5,
   },
   statusDot: {
@@ -1547,9 +1642,9 @@ const st = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: "#a08343",
   },
-  statusText: { fontSize: 12, fontWeight: "500", color: "#52683f" },
+  statusText: { fontSize: 14, fontWeight: "500", color: "#48685F" },
   communityCard: {
-    backgroundColor: "#edf1e2",
+    backgroundColor: "#DFF2F7",
     borderRadius: 10,
     padding: 18,
     flexDirection: "row",
@@ -1557,11 +1652,11 @@ const st = StyleSheet.create({
     alignItems: "center",
     marginTop: 14,
   },
-  communityTitle: { fontSize: 14, color: "#54713f", fontWeight: "500" },
+  communityTitle: { fontSize: 14, color: "#105B42", fontWeight: "500" },
   communityText: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: "#52683f",
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#48685F",
     marginTop: 5,
   },
   bottomNav: {
@@ -1587,16 +1682,16 @@ const st = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 8,
   },
-  navIconActive: { backgroundColor: "#e9f0da" },
-  navText: { fontSize: 12, color: "#5d7052" },
+  navIconActive: { backgroundColor: "#D7F26A" },
+  navText: { fontSize: 14, color: "#48685F" },
   navTextActive: { color: C.green, fontWeight: "600" },
   footer: {
-    fontSize: 12,
+    fontSize: 14,
     letterSpacing: 1.1,
     textAlign: "center",
-    color: "#5d7052",
+    color: "#48685F",
     marginVertical: 26,
-    lineHeight: 15,
+    lineHeight: 21,
   },
   pageTitle: {
     fontFamily: serif,
@@ -1606,7 +1701,7 @@ const st = StyleSheet.create({
     marginBottom: 9,
   },
   pageSubtitle: {
-    fontSize: 12,
+    fontSize: 14,
     lineHeight: 20,
     color: C.muted,
     marginBottom: 22,
@@ -1621,8 +1716,8 @@ const st = StyleSheet.create({
   },
   capacityTop: { flexDirection: "row", gap: 10, alignItems: "center" },
   capacityTitle: { fontSize: 17, fontWeight: "500", color: C.green, flex: 1 },
-  confirmedPill: { backgroundColor: "#edf3e2", padding: 6, borderRadius: 4 },
-  confirmedText: { fontSize: 12, color: "#52683f" },
+  confirmedPill: { backgroundColor: "#E8F6C7", padding: 6, borderRadius: 4 },
+  confirmedText: { fontSize: 14, color: "#48685F" },
   capacityNumber: {
     fontSize: 47,
     fontWeight: "400",
@@ -1634,9 +1729,9 @@ const st = StyleSheet.create({
     fontSize: 18,
     fontWeight: "400",
     letterSpacing: 0,
-    color: "#5d7052",
+    color: "#48685F",
   },
-  capacityDescription: { fontSize: 12, color: "#5d7052", marginTop: 4 },
+  capacityDescription: { fontSize: 14, color: "#48685F", marginTop: 4 },
   capacityFoot: {
     flexDirection: "row",
     alignItems: "center",
@@ -1646,18 +1741,18 @@ const st = StyleSheet.create({
     marginTop: 20,
     paddingTop: 6,
   },
-  capacityLimit: { fontSize: 12, color: "#5d7052" },
+  capacityLimit: { fontSize: 14, color: "#48685F" },
   tip: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 10,
     padding: 17,
-    backgroundColor: "#eaf0dd",
+    backgroundColor: "#E8F6C7",
     borderRadius: 10,
   },
-  tipText: { flex: 1, fontSize: 12, lineHeight: 18, color: "#52683f" },
+  tipText: { flex: 1, fontSize: 14, lineHeight: 21, color: "#48685F" },
   proposalCard: {
-    backgroundColor: "#254733",
+    backgroundColor: "#075E78",
     borderRadius: 12,
     padding: 21,
     marginBottom: 25,
@@ -1674,14 +1769,14 @@ const st = StyleSheet.create({
   proposalTitle: {
     fontSize: 19,
     lineHeight: 24,
-    color: "#f5f8ec",
+    color: "#FFFFFF",
     fontWeight: "500",
     letterSpacing: -0.6,
   },
   proposalText: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: "#c1d3b3",
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#DFF2F7",
     marginTop: 9,
     marginBottom: 17,
   },
@@ -1699,9 +1794,9 @@ const st = StyleSheet.create({
   secondary: {
     backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#dbe3ce",
+    borderColor: "#BCD1CA",
   },
-  buttonText: { color: "#fff", fontWeight: "500", fontSize: 12 },
+  buttonText: { color: "#fff", fontWeight: "500", fontSize: 14 },
   proposalLine: {
     flexDirection: "row",
     gap: 12,
@@ -1722,17 +1817,17 @@ const st = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 20,
-    backgroundColor: "#e5edda",
+    backgroundColor: "#E8F6C7",
     alignItems: "center",
     justifyContent: "center",
   },
   eventTitle: { fontSize: 13, fontWeight: "500", color: C.green },
-  eventText: { fontSize: 12, lineHeight: 18, color: C.muted, marginTop: 6 },
-  eventTime: { fontSize: 12, color: "#5d7052", marginTop: 9 },
+  eventText: { fontSize: 14, lineHeight: 21, color: C.muted, marginTop: 6 },
+  eventTime: { fontSize: 14, color: "#48685F", marginTop: 9 },
   accountCard: {
     alignItems: "center",
     padding: 25,
-    backgroundColor: "#eef2e3",
+    backgroundColor: "#DFF2F7",
     borderWidth: 1,
     borderColor: C.line,
     borderRadius: 13,
@@ -1741,7 +1836,7 @@ const st = StyleSheet.create({
   accountAvatar: {
     width: 68,
     height: 68,
-    backgroundColor: "#dbe6bf",
+    backgroundColor: "#D7F26A",
     borderRadius: 40,
     alignItems: "center",
     justifyContent: "center",
@@ -1754,19 +1849,19 @@ const st = StyleSheet.create({
     textAlign: "center",
   },
   accountRole: {
-    fontSize: 12,
+    fontSize: 14,
     color: C.muted,
     textAlign: "center",
     marginTop: 7,
   },
   demoPill: {
-    backgroundColor: "#e1eacb",
+    backgroundColor: "#E8F6C7",
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 7,
     marginTop: 19,
   },
-  demoPillText: { fontSize: 12, color: "#52683f" },
+  demoPillText: { fontSize: 14, color: "#48685F" },
   accessRow: {
     flexDirection: "row",
     gap: 12,
@@ -1775,10 +1870,10 @@ const st = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: C.line,
   },
-  accessName: { flex: 1, fontSize: 12, color: C.green },
+  accessName: { flex: 1, fontSize: 14, color: C.green },
   input: {
     borderWidth: 1,
-    borderColor: "#d8e1ca",
+    borderColor: "#BCD1CA",
     backgroundColor: "white",
     borderRadius: 7,
     minHeight: 49,
@@ -1788,14 +1883,14 @@ const st = StyleSheet.create({
     marginVertical: 10,
   },
   fieldLabel: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "500",
     color: C.green,
     marginTop: 15,
   },
   bigInput: {
     borderWidth: 1,
-    borderColor: "#c7d5b3",
+    borderColor: "#105B42",
     borderRadius: 9,
     padding: 18,
     fontSize: 36,
@@ -1804,14 +1899,14 @@ const st = StyleSheet.create({
     backgroundColor: "white",
   },
   inputHelp: {
-    fontSize: 12,
-    lineHeight: 19,
+    fontSize: 14,
+    lineHeight: 21,
     color: C.muted,
     marginBottom: 23,
     marginTop: 10,
   },
   logout: { alignItems: "center", padding: 25 },
-  disclaimer: { fontSize: 12, lineHeight: 17, color: "#52683f", marginTop: 10 },
+  disclaimer: { fontSize: 14, lineHeight: 21, color: "#48685F", marginTop: 10 },
   modalBackdrop: {
     flex: 1,
     justifyContent: "flex-end",
@@ -1821,7 +1916,7 @@ const st = StyleSheet.create({
   sheet: {
     width: "100%",
     maxHeight: "90%",
-    backgroundColor: "#fafbf5",
+    backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 25,
@@ -1832,7 +1927,7 @@ const st = StyleSheet.create({
     height: 4,
     width: 35,
     borderRadius: 4,
-    backgroundColor: "#d2dbc6",
+    backgroundColor: "#BCD1CA",
     alignSelf: "center",
     marginBottom: 14,
   },
@@ -1857,7 +1952,7 @@ const st = StyleSheet.create({
     justifyContent: "center",
   },
   sheetIntro: {
-    fontSize: 12,
+    fontSize: 14,
     lineHeight: 20,
     color: C.muted,
     marginBottom: 12,
@@ -1867,7 +1962,7 @@ const st = StyleSheet.create({
     alignItems: "center",
     gap: 16,
     padding: 20,
-    backgroundColor: "#ecf0df",
+    backgroundColor: "#FFF1BE",
     borderRadius: 11,
     marginBottom: 15,
   },
@@ -1880,9 +1975,9 @@ const st = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: C.line,
   },
-  detailLabel: { fontSize: 12, color: C.muted },
+  detailLabel: { fontSize: 14, color: C.muted },
   detailValue: {
-    fontSize: 12,
+    fontSize: 14,
     color: C.green,
     textAlign: "right",
     maxWidth: "70%",
@@ -1891,7 +1986,7 @@ const st = StyleSheet.create({
     marginTop: 20,
     padding: 20,
     borderRadius: 10,
-    backgroundColor: "#eaf2dc",
+    backgroundColor: "#E8F6C7",
     alignItems: "center",
   },
   receiptTitle: {
@@ -1901,18 +1996,18 @@ const st = StyleSheet.create({
     marginTop: 10,
   },
   receiptText: {
-    fontSize: 12,
+    fontSize: 14,
     color: C.muted,
     textAlign: "center",
     marginTop: 8,
-    lineHeight: 18,
+    lineHeight: 21,
   },
   toast: {
     position: "absolute",
     bottom: Platform.OS === "web" ? 95 : 117,
     left: 16,
     right: 16,
-    backgroundColor: "#244734",
+    backgroundColor: "#105B42",
     padding: 15,
     borderRadius: 10,
     flexDirection: "row",
@@ -1923,11 +2018,11 @@ const st = StyleSheet.create({
     shadowRadius: 12,
     elevation: 4,
   },
-  toastText: { flex: 1, color: "white", fontSize: 12, lineHeight: 17 },
-  error: { color: "#975535", fontSize: 12, lineHeight: 19 },
+  toastText: { flex: 1, color: "white", fontSize: 14, lineHeight: 21 },
+  error: { color: "#8A3021", fontSize: 14, lineHeight: 21 },
   errorBox: {
     padding: 15,
-    backgroundColor: "#f8e8dd",
+    backgroundColor: "#FFE2DA",
     borderRadius: 8,
     marginBottom: 16,
     flexDirection: "row",
@@ -1935,17 +2030,17 @@ const st = StyleSheet.create({
   },
   pendingBox: {
     padding: 18,
-    backgroundColor: "#f4edd8",
+    backgroundColor: "#FFF1BE",
     borderWidth: 1,
-    borderColor: "#e7d9b0",
+    borderColor: "#D5B768",
     borderRadius: 11,
     marginBottom: 20,
   },
   pendingTitle: { fontSize: 13, color: C.amber, fontWeight: "500", flex: 1 },
   pendingText: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: "#816a38",
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#795015",
     marginVertical: 11,
   },
   welcome: {
@@ -1958,7 +2053,7 @@ const st = StyleSheet.create({
   },
   welcomeArt: {
     marginTop: 30,
-    backgroundColor: "#edf0dc",
+    backgroundColor: "#DFF2F7",
     borderRadius: 15,
     overflow: "hidden",
   },
@@ -1993,13 +2088,186 @@ const st = StyleSheet.create({
     paddingVertical: 22,
     minHeight: 48,
   },
-  demoText: { fontSize: 12, color: C.green, fontWeight: "500" },
+  demoText: { fontSize: 14, color: C.green, fontWeight: "500" },
   welcomeFooter: {
-    fontSize: 12,
-    color: "#52683f",
+    fontSize: 14,
+    color: "#48685F",
     letterSpacing: 1.2,
     textAlign: "center",
     marginTop: 20,
   },
-  muted: { fontSize: 12, color: C.muted, textAlign: "center", marginTop: 10 },
+  muted: { fontSize: 14, color: C.muted, textAlign: "center", marginTop: 10 },
 });
+
+const st = {
+  ...baseStyles,
+  ...StyleSheet.create({
+    logoName: { ...baseStyles.logoName, fontFamily: serif, fontSize: 27 },
+    logoSub: { ...baseStyles.logoSub, fontSize: 11, letterSpacing: 3 },
+    header: {
+      ...baseStyles.header,
+      paddingTop: 16,
+      paddingBottom: 16,
+      backgroundColor: "#FFFFFF",
+      borderBottomWidth: 1,
+      borderColor: C.line,
+    },
+    profileButton: {
+      ...baseStyles.profileButton,
+      width: 48,
+      height: 48,
+      borderWidth: 1,
+      borderColor: C.green,
+    },
+    connectionBar: {
+      ...baseStyles.connectionBar,
+      marginHorizontal: 20,
+      paddingTop: 12,
+      paddingBottom: 12,
+    },
+    content: { ...baseStyles.content, paddingHorizontal: 20 },
+    hero: {
+      ...baseStyles.hero,
+      minHeight: 0,
+      padding: 22,
+      paddingBottom: 0,
+      backgroundColor: "#E8F6C7",
+      borderColor: C.green,
+      borderWidth: 1.5,
+      borderRadius: 18,
+    },
+    heroTitle: {
+      ...baseStyles.heroTitle,
+      fontSize: 34,
+      lineHeight: 36,
+      fontFamily: serif,
+    },
+    heroSubtitle: {
+      ...baseStyles.heroSubtitle,
+      fontSize: 16,
+      lineHeight: 23,
+      maxWidth: 360,
+    },
+    garden: {
+      ...baseStyles.garden,
+      position: "relative",
+      bottom: 0,
+      right: 0,
+      width: "100%",
+      marginTop: 18,
+    },
+    miniStats: {
+      ...baseStyles.miniStats,
+      borderRadius: 15,
+      borderColor: C.green,
+    },
+    miniStat: { ...baseStyles.miniStat, paddingHorizontal: 16 },
+    miniNumber: { ...baseStyles.miniNumber, fontFamily: serif, fontSize: 32 },
+    miniLabel: { ...baseStyles.miniLabel, lineHeight: 20 },
+    sectionTitle: {
+      ...baseStyles.sectionTitle,
+      fontFamily: serif,
+      fontSize: 21,
+      lineHeight: 26,
+    },
+    pageTitle: { ...baseStyles.pageTitle, fontSize: 34, lineHeight: 39 },
+    pageSubtitle: { ...baseStyles.pageSubtitle, fontSize: 16, lineHeight: 23 },
+    deliveryCard: {
+      ...baseStyles.deliveryCard,
+      borderRadius: 15,
+      borderColor: C.line,
+      padding: 18,
+      borderLeftWidth: 4,
+      borderLeftColor: C.green,
+    },
+    deliveryProduct: {
+      ...baseStyles.deliveryProduct,
+      fontSize: 18,
+      fontFamily: serif,
+    },
+    deliveryMeta: { ...baseStyles.deliveryMeta, fontSize: 15, lineHeight: 20 },
+    deliveryQty: { ...baseStyles.deliveryQty, fontFamily: serif, fontSize: 26 },
+    deliveryBottom: { ...baseStyles.deliveryBottom, flexWrap: "wrap", gap: 10 },
+    status: { ...baseStyles.status, minHeight: 32 },
+    button: {
+      ...baseStyles.button,
+      minHeight: 52,
+      borderRadius: 10,
+      paddingVertical: 14,
+    },
+    buttonText: { ...baseStyles.buttonText, fontSize: 16, flexShrink: 1 },
+    bottomNav: { ...baseStyles.bottomNav, paddingBottom: 12, paddingTop: 8 },
+    navText: { ...baseStyles.navText, fontSize: 13 },
+    navIcon: { ...baseStyles.navIcon, width: 54, height: 32 },
+    capacityTitle: {
+      ...baseStyles.capacityTitle,
+      fontFamily: serif,
+      fontSize: 22,
+    },
+    capacityNumber: { ...baseStyles.capacityNumber, fontFamily: serif },
+    capacityFoot: { ...baseStyles.capacityFoot, flexWrap: "wrap", gap: 10 },
+    capacityLimit: { ...baseStyles.capacityLimit, flexShrink: 1 },
+    input: {
+      ...baseStyles.input,
+      fontFamily: "SourceRegular",
+      fontSize: 17,
+      minHeight: 54,
+    },
+    bigInput: { ...baseStyles.bigInput, fontFamily: serif },
+    sheet: {
+      ...baseStyles.sheet,
+      paddingHorizontal: 22,
+      borderWidth: 1.5,
+      borderColor: C.green,
+    },
+    sheetTop: {
+      ...baseStyles.sheetTop,
+      borderBottomWidth: 1,
+      borderColor: C.line,
+      paddingBottom: 15,
+    },
+    sheetTitle: {
+      ...baseStyles.sheetTitle,
+      fontFamily: serif,
+      fontSize: 25,
+      lineHeight: 29,
+    },
+    sheetIntro: { ...baseStyles.sheetIntro, fontSize: 16, lineHeight: 23 },
+    accountName: { ...baseStyles.accountName, fontSize: 28, lineHeight: 34 },
+    welcome: { ...baseStyles.welcome, paddingHorizontal: 22 },
+    welcomeTitle: { ...baseStyles.welcomeTitle, fontSize: 37, lineHeight: 41 },
+    welcomeText: { ...baseStyles.welcomeText, fontSize: 17, lineHeight: 25 },
+    welcomeArt: {
+      ...baseStyles.welcomeArt,
+      borderWidth: 1.5,
+      borderColor: C.green,
+    },
+    welcomeBox: {
+      ...baseStyles.welcomeBox,
+      borderColor: C.green,
+      borderRadius: 15,
+    },
+    welcomeBoxTitle: {
+      ...baseStyles.welcomeBoxTitle,
+      fontFamily: serif,
+      fontSize: 22,
+    },
+    footer: { ...baseStyles.footer, letterSpacing: 0, lineHeight: 20 },
+    welcomeFooter: {
+      ...baseStyles.welcomeFooter,
+      letterSpacing: 0,
+      lineHeight: 20,
+    },
+    toastText: { ...baseStyles.toastText, fontSize: 15, lineHeight: 21 },
+    error: { ...baseStyles.error, flexShrink: 1, fontSize: 15, lineHeight: 22 },
+    detailValue: {
+      ...baseStyles.detailValue,
+      flexShrink: 1,
+      fontSize: 16,
+      lineHeight: 22,
+    },
+    detailLabel: { ...baseStyles.detailLabel, fontSize: 15, lineHeight: 22 },
+    communityText: { ...baseStyles.communityText, lineHeight: 22 },
+    tipText: { ...baseStyles.tipText, fontSize: 15, lineHeight: 22 },
+  }),
+};

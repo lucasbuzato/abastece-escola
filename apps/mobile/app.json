@@ -16,10 +16,11 @@
     "web": {
       "bundler": "metro",
       "name": "Abastece Escola App",
-      "description": "A próxima entrega, sempre à mão."
+      "description": "Capacidade, sa\u00edda e confer\u00eancia de alimentos no mesmo plano."
     },
     "experiments": {
-      "baseUrl": "/app"
+      "baseUrl": "/app",
+      "autolinkingModuleResolution": false
     },
     "plugins": [
       "expo-font"
@@ -29,6 +30,23 @@
       "eas": {
         "projectId": "1ab49602-b94c-4e8a-93e5-821374b6fa21"
       }
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/1ab49602-b94c-4e8a-93e5-821374b6fa21"
+    },
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "icon": "./assets/icon.png",
+    "splash": {
+      "backgroundColor": "#F3F8F6",
+      "image": "./assets/icon.png",
+      "resizeMode": "contain"
     }
   }
 }

@@ -70,7 +70,7 @@ No app, o último retrato pode ser consultado sem rede. Uma conferência cujo en
 
 ## Design, movimento e acessibilidade
 
-A web usa Bricolage Grotesque nos títulos e Source Sans 3 no texto, fontes locais. Verde floresta, lima, amarelo de colheita, azul e terracota têm papéis distintos. Paisagem, curvas de cultivo e horta são SVGs próprios; a fotografia editorial tem crédito e licença. O app conserva a organização por tarefa, com a identidade anterior. A web organiza decisões e comparação; o app concentra uma tarefa e grandes ações. As 48 referências, suas categorias, aplicações e limitações de inspeção estão em `docs/referencias.json`; a síntese em `docs/direcao-visual.txt`. Nenhuma imagem desses projetos integra o produto.
+A web usa Bricolage Grotesque nos títulos e Source Sans 3 no texto, fontes locais. Verde floresta, lima, amarelo de colheita, azul e terracota têm papéis distintos. Paisagem, curvas de cultivo e horta são SVGs próprios; a fotografia editorial tem crédito e licença. O app usa a mesma tipografia e paleta, adaptadas às tarefas de produtor e escola. A web organiza decisões e comparação; o app concentra uma tarefa e grandes ações. As 48 referências, suas categorias, aplicações e limitações de inspeção estão em `docs/referencias.json`; a síntese em `docs/direcao-visual.txt`. Nenhuma imagem desses projetos integra o produto.
 
 Motion: GSAP/ScrollTrigger no site de apresentação e Motion na navegação da coordenação, com entrada de confirmações e estados de proposta/entrega. SVG de caminhão/colheita reforça a identidade. A web tem pausa de animações ambiente e respeita `prefers-reduced-motion`; o app observa a preferência de movimento reduzido do sistema. Movimento não é necessário para entender informação.
 
@@ -92,3 +92,5 @@ HTML semântico, atalho ao conteúdo, foco visível, diálogos nativos, rótulos
 ## ODS e limites do escopo
 
 ODS 2 (Fome Zero e Agricultura Sustentável): visibilidade do abastecimento escolar e participação de fornecedores locais. ODS 12 (Consumo e Produção Responsáveis): registrar diferença entre previsto, recebido, aceito e rejeitado ajuda a investigar perdas. O protótipo não comprova redução da fome/desperdício e não determina qualidade sanitária, cardápios, elegibilidade de fornecedores ou decisões de contratação pública.
+
+A revisão do aplicativo, os testes de integração pela interface e os limites da verificação estão em `docs/aplicativo-publicacao.md`.
