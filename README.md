@@ -10,7 +10,7 @@ Do campo ao prato: coordenação do abastecimento escolar com agricultura famili
 - Vercel conectada ao repositório pessoal. A API persistente existente é encaminhada por /api; web e app usam os mesmos registros.
 - Autor: **Lucas Buzato Venarusso - RM 562332**. Trabalho desenvolvido individualmente. O enunciado prevê grupos de 2 a 5 integrantes; a aceitação da entrega individual depende da instituição.
 - Documento: [Relatório em PDF](docs/entrega/Relatorio_Abastece_Escola.pdf).
-- Pitch: [assistir ao vídeo narrado](https://abastece-escola.vercel.app/pitch/) ou consultar o [roteiro e plano de cenas](docs/entrega/Roteiro_Pitch.md). O vídeo tem aproximadamente 2min45s, com narração do autor e oito cenas sincronizadas.
+- Pitch: [assistir ao vídeo narrado](https://abastece-escola.vercel.app/pitch/) ou consultar o [roteiro e plano de cenas](docs/entrega/Roteiro_Pitch.md). O vídeo tem aproximadamente 2min42s, com narração do autor e oito cenas sincronizadas.
 
 ## O problema e os papéis
 

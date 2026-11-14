@@ -50,7 +50,7 @@ A identidade visual é comum ao app e à web. Transições ajudam a acompanhar e
 
 ## 02:39 a 02:57 - Por que isso importa
 
-A proposta se relaciona aos ODS dois e doze: abastecimento escolar e acompanhamento de perdas. O impacto ainda precisa ser medido em campo com usuários reais. Sou Lucas Buzato Venarusso. O código, o site e a demonstração estão disponíveis nos links da apresentação.
+A proposta se relaciona aos ODS dois e doze: abastecimento escolar e acompanhamento de perdas. Sou Lucas Buzato Venarusso. O código, o site e a demonstração estão disponíveis nos links da apresentação.
 
 **Imagem:** Mostrar os ODS e encerrar com nome do autor, RM e links do projeto.
 
